@@ -1,0 +1,49 @@
+package com.example.taxflow.di
+
+import com.example.taxflow.data.local.database.AppDatabase
+import com.example.taxflow.data.repository.CategoryRepository
+import com.example.taxflow.data.repository.CategoryRepositoryImpl
+import com.example.taxflow.data.repository.SettingsRepository
+import com.example.taxflow.data.repository.SettingsRepositoryImpl
+import com.example.taxflow.data.repository.TaxDeadlineRepository
+import com.example.taxflow.data.repository.TaxDeadlineRepositoryImpl
+import com.example.taxflow.data.repository.TransactionRepository
+import com.example.taxflow.data.repository.TransactionRepositoryImpl
+import com.example.taxflow.data.settings.SettingsDataStore
+import com.example.taxflow.domain.usecase.CalculateTaxReserveUseCase
+import com.example.taxflow.viewModel.AddTransactionViewModel
+import com.example.taxflow.viewModel.DashboardViewModel
+import com.example.taxflow.viewModel.DeadlinesViewModel
+import com.example.taxflow.viewModel.OverviewViewModel
+import com.example.taxflow.viewModel.SettingsViewModel
+import org.koin.dsl.module
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.viewModel
+
+val appModule = module {
+
+    // Database & DAOs
+    single { AppDatabase.getInstance(androidContext()) }
+    single { get<AppDatabase>().transactionDao() }
+    single { get<AppDatabase>().categoryDao() }
+    single { get<AppDatabase>().taxDeadlineDao() }
+
+    // Settings (DataStore)
+    single { SettingsDataStore(androidContext()) }
+
+    // Repositories
+    single<TransactionRepository> { TransactionRepositoryImpl(get()) }
+    single<CategoryRepository> { CategoryRepositoryImpl(get()) }
+    single<TaxDeadlineRepository> { TaxDeadlineRepositoryImpl(get()) }
+    single<SettingsRepository> { SettingsRepositoryImpl(get()) }
+
+    // Use cases
+    factory { CalculateTaxReserveUseCase() }
+
+    // ViewModels
+    viewModel { DashboardViewModel(get(), get(), get()) }
+    viewModel { AddTransactionViewModel(get(), get()) }
+    viewModel { OverviewViewModel(get()) }
+    viewModel { DeadlinesViewModel(get()) }
+    viewModel { SettingsViewModel(get()) }
+}
