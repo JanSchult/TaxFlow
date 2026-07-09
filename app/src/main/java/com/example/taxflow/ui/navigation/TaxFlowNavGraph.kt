@@ -18,12 +18,17 @@ import com.example.taxflow.ui.screens.DashboardScreen
 import com.example.taxflow.ui.screens.DeadlinesScreen
 import com.example.taxflow.ui.screens.OverviewScreen
 import com.example.taxflow.ui.screens.PaywallScreen
+import com.example.taxflow.ui.screens.ReceiptScanScreen
 import com.example.taxflow.ui.screens.SettingsScreen
 
 @Composable
 fun TaxFlowNavGraph() {
     val navController = rememberNavController()
-
+    val goToReceiptScanOrPaywall: () -> Unit = {
+        val isPremium = false
+        if (isPremium) navController.navigate(Screen.ReceiptScan.route)
+        else navController.navigate(Screen.Paywall.route)
+    }
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -55,11 +60,21 @@ fun TaxFlowNavGraph() {
         ) {
             composable(Screen.Dashboard.route) { DashboardScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
             composable(Screen.AddTransaction.route) {
-                AddTransactionScreen(onSaved = { navController.navigate(Screen.Dashboard.route) })
+                AddTransactionScreen(
+                    onSaved = { navController.navigate(Screen.Dashboard.route) },
+                    onScanReceiptClick = goToReceiptScanOrPaywall
+
+                )
             }
             composable(Screen.Overview.route) { OverviewScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
             composable(Screen.Deadlines.route) { DeadlinesScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
             composable(Screen.Settings.route) { SettingsScreen() }
+            composable(Screen.ReceiptScan.route) {
+                ReceiptScanScreen(
+                    onDone = { navController.navigate(Screen.AddTransaction.route) { popUpTo(Screen.AddTransaction.route) { inclusive = true } } },
+                    onCancel = { navController.popBackStack() }
+                )
+            }
             composable(Screen.Paywall.route) {
                 PaywallScreen(
                     onDismiss = { navController.popBackStack() },
