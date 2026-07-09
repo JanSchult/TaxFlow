@@ -21,52 +21,64 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taxflow.domain.model.OverviewMode
+import com.example.taxflow.ui.components.PremiumGate
 import com.example.taxflow.util.formatCurrency
 import com.example.taxflow.viewModel.OverviewViewModel
+import com.example.taxflow.viewModel.PremiumStatusViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun OverviewScreen(viewModel: OverviewViewModel = koinViewModel()) {
+fun OverviewScreen(viewModel: OverviewViewModel = koinViewModel(),
+                   onNavigateToPaywall: () -> Unit,
+                   premiumViewModel: PremiumStatusViewModel = koinViewModel()) {
+
+    val isPremium by premiumViewModel.isPremium.collectAsState()
     val state by viewModel.uiState.collectAsState()
+    PremiumGate(
+        isPremium = isPremium,
+        title = "Übersicht",
+        description = "Sieh auf einen Blick, wie viel du für Steuern zurücklegen solltest.",
+        onUpgradeClick = onNavigateToPaywall
+    ) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Text("Übersicht", style = MaterialTheme.typography.headlineMedium)
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Übersicht", style = MaterialTheme.typography.headlineMedium)
-
-        Row(modifier = Modifier.padding(vertical = 12.dp)) {
-            SingleChoiceSegmentedButtonRow {
-                SegmentedButton(
-                    selected = state.mode == OverviewMode.MONTH,
-                    onClick = { viewModel.setMode(OverviewMode.MONTH) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-                ) { Text("Monate") }
-                SegmentedButton(
-                    selected = state.mode == OverviewMode.YEAR,
-                    onClick = { viewModel.setMode(OverviewMode.YEAR) },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-                ) { Text("Jahre") }
+            Row(modifier = Modifier.padding(vertical = 12.dp)) {
+                SingleChoiceSegmentedButtonRow {
+                    SegmentedButton(
+                        selected = state.mode == OverviewMode.MONTH,
+                        onClick = { viewModel.setMode(OverviewMode.MONTH) },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                    ) { Text("Monate") }
+                    SegmentedButton(
+                        selected = state.mode == OverviewMode.YEAR,
+                        onClick = { viewModel.setMode(OverviewMode.YEAR) },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                    ) { Text("Jahre") }
+                }
             }
-        }
 
-        LazyColumn(
-            contentPadding = PaddingValues(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(state.monthSummaries) { summary ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(summary.label, style = MaterialTheme.typography.titleMedium)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Einnahmen: ${formatCurrency(summary.income, "EUR")}")
-                            Text("Ausgaben: ${formatCurrency(summary.expenses, "EUR")}")
+            LazyColumn(
+                contentPadding = PaddingValues(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(state.monthSummaries) { summary ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(summary.label, style = MaterialTheme.typography.titleMedium)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Einnahmen: ${formatCurrency(summary.income, "EUR")}")
+                                Text("Ausgaben: ${formatCurrency(summary.expenses, "EUR")}")
+                            }
+                            Text(
+                                "Gewinn: ${formatCurrency(summary.profit, "EUR")}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (summary.profit >= 0) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error
+                            )
                         }
-                        Text(
-                            "Gewinn: ${formatCurrency(summary.profit, "EUR")}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = if (summary.profit >= 0) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error
-                        )
                     }
                 }
             }
