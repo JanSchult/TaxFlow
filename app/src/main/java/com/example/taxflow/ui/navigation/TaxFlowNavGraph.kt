@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.taxflow.ui.screens.AddTransactionScreen
 import com.example.taxflow.ui.screens.DashboardScreen
 import com.example.taxflow.ui.screens.DeadlinesScreen
+import com.example.taxflow.ui.screens.ExportScreen
 import com.example.taxflow.ui.screens.OverviewScreen
 import com.example.taxflow.ui.screens.PaywallScreen
 import com.example.taxflow.ui.screens.ReceiptScanScreen
@@ -72,7 +73,7 @@ fun TaxFlowNavGraph() {
 
                 )
             }
-            composable(Screen.Overview.route) { OverviewScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
+            composable(Screen.Overview.route) { OverviewScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }, onExportClick = { navController.navigate(Screen.Export.route) }) }
             composable(Screen.Deadlines.route) { DeadlinesScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
             composable(Screen.Settings.route) { SettingsScreen() }
             composable(Screen.ReceiptScan.route) {
@@ -86,6 +87,9 @@ fun TaxFlowNavGraph() {
                     onDismiss = { navController.popBackStack() },
                     onPurchaseSuccessful = { navController.popBackStack() }
                 )
+            }
+            composable(Screen.Export.route) {
+                ExportScreen()
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.example.taxflow.di
 
 import com.example.taxflow.billigmanager.BillingManager
+import com.example.taxflow.data.PdfReportGenerator
 import com.example.taxflow.data.local.database.AppDatabase
 import com.example.taxflow.data.orc.ReceiptDraftHolder
 import com.example.taxflow.data.orc.ReceiptTextRecognizer
@@ -20,6 +21,7 @@ import com.example.taxflow.domain.usecase.CalculateTaxReserveUseCase
 import com.example.taxflow.viewModel.AddTransactionViewModel
 import com.example.taxflow.viewModel.DashboardViewModel
 import com.example.taxflow.viewModel.DeadlinesViewModel
+import com.example.taxflow.viewModel.ExportViewModel
 import com.example.taxflow.viewModel.OverviewViewModel
 import com.example.taxflow.viewModel.PaywallViewModel
 import com.example.taxflow.viewModel.PremiumStatusViewModel
@@ -43,6 +45,7 @@ val appModule = module {
     single { PremiumStatusDataStore(androidContext()) }
     single { ReceiptTextRecognizer() }
     single { ReceiptDraftHolder() }
+    single { PdfReportGenerator(androidContext()) }
     // Repositories
     single<TransactionRepository> { TransactionRepositoryImpl(get()) }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
@@ -62,6 +65,6 @@ val appModule = module {
     viewModel { PaywallViewModel(get(), get()) }
     viewModel { PremiumStatusViewModel(get()) }
     viewModel { ReceiptScanViewModel(get(), get()) }
-
+    viewModel { ExportViewModel(get(), get(), get()) }
 
 }
