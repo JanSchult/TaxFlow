@@ -6,6 +6,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -20,12 +21,17 @@ import com.example.taxflow.ui.screens.OverviewScreen
 import com.example.taxflow.ui.screens.PaywallScreen
 import com.example.taxflow.ui.screens.ReceiptScanScreen
 import com.example.taxflow.ui.screens.SettingsScreen
+import com.example.taxflow.viewModel.PremiumStatusViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun TaxFlowNavGraph() {
     val navController = rememberNavController()
+
+    val premiumStatusViewModel: PremiumStatusViewModel = koinViewModel()
+    val isPremium by premiumStatusViewModel.isPremium.collectAsState()
+
     val goToReceiptScanOrPaywall: () -> Unit = {
-        val isPremium = false
         if (isPremium) navController.navigate(Screen.ReceiptScan.route)
         else navController.navigate(Screen.Paywall.route)
     }

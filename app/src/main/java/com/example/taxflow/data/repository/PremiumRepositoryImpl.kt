@@ -7,8 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+private const val PAYWALL_TEMPORARILY_DISABLED = true
+/** true = Premium aktiv, false = Free-Tier. Aus lokalem Cache, sofort verfügbar (auch offline). */
 
 class PremiumRepositoryImpl(
     private val billingManager: BillingManager,
@@ -18,7 +22,8 @@ class PremiumRepositoryImpl(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override val isPremium: StateFlow<Boolean> = dataStore.isPremiumFlow
-        .stateIn(scope, SharingStarted.Eagerly, false)
+        .map{realStatus ->if (PAYWALL_TEMPORARILY_DISABLED) true else realStatus}
+        .stateIn(scope, SharingStarted.Eagerly, PAYWALL_TEMPORARILY_DISABLED)
 
     init {
         // Live-Updates aus dem Kauf-Flow (z. B. direkt nach erfolgreichem Kauf) übernehmen.
@@ -30,6 +35,9 @@ class PremiumRepositoryImpl(
     }
 
     override suspend fun refreshFromPlayStore() {
+
+        if (PAYWALL_TEMPORARILY_DISABLED) return
+
         val connected = billingManager.connect()
         if (!connected) return
         val purchases = billingManager.queryActiveSubscriptionPurchases()

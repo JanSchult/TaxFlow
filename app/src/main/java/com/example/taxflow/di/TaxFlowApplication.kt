@@ -12,12 +12,16 @@ import org.koin.android.ext.android.get
 class TaxFlowApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        // 1. ERST Koin komplett starten und die Module registrieren ...
         startKoin {
-            CoroutineScope(Dispatchers.IO).launch {
-                get<PremiumRepository>().refreshFromPlayStore()
-            }
-                androidContext(this@TaxFlowApplication)
-                modules(appModule)
+            androidContext(this@TaxFlowApplication)
+            modules(appModule)
+        }
+
+        // 2. ... und ERST DANACH, außerhalb der startKoin{}-Lambda, etwas auflösen.
+        CoroutineScope(Dispatchers.IO).launch {
+            get<PremiumRepository>().refreshFromPlayStore()
         }
     }
 }
