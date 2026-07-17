@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "815704085836",
+    "project_id": "taxflow-76ad2",
+    "storage_bucket": "taxflow-76ad2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:815704085836:android:629a205dbc06658a27abe9",
+        "android_client_info": {
+          "package_name": "com.example.taxflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAA5MSI8wFWk7_DxeT8duvHYLQW-vLBbCo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
