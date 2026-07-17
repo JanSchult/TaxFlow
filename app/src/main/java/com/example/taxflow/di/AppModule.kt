@@ -3,6 +3,8 @@ package com.example.taxflow.di
 import com.example.taxflow.billigmanager.BillingManager
 import com.example.taxflow.data.PdfReportGenerator
 import com.example.taxflow.data.local.database.AppDatabase
+import com.example.taxflow.data.notification.NotificationHelper
+import com.example.taxflow.data.notification.NotifiedRemindersDataStore
 import com.example.taxflow.data.orc.ReceiptDraftHolder
 import com.example.taxflow.data.orc.ReceiptTextRecognizer
 import com.example.taxflow.data.repository.CategoryRepository
@@ -46,6 +48,8 @@ val appModule = module {
     single { ReceiptTextRecognizer() }
     single { ReceiptDraftHolder() }
     single { PdfReportGenerator(androidContext()) }
+    single { NotificationHelper(androidContext()) }
+    single { NotifiedRemindersDataStore(androidContext()) }
     // Repositories
     single<TransactionRepository> { TransactionRepositoryImpl(get()) }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
