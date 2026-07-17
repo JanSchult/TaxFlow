@@ -32,4 +32,7 @@ class DeadlinesViewModel(
     fun delete(deadline: TaxDeadline) {
         viewModelScope.launch { repository.delete(deadline) }
     }
+    fun update(deadline: TaxDeadline){
+        viewModelScope.launch { repository.update(deadline) }
+    }
 }
