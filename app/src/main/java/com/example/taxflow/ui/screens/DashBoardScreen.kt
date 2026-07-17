@@ -1,5 +1,6 @@
 package com.example.taxflow.ui.screens
 
+import ExpandableSummaryCard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,6 +31,10 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                     premiumViewModel: PremiumStatusViewModel = koinViewModel(),) {
     val state by viewModel.uiState.collectAsState()
     val isPremium by premiumViewModel.isPremium.collectAsState()
+
+    // Zustände, ob die jeweiligen Sektionen ausgefahren sind
+    var isIncomeExpanded by remember { mutableStateOf(false) }
+    var isExpensesExpanded by remember { mutableStateOf(false) }
 
     PremiumGate(
         isPremium = isPremium,
@@ -55,22 +63,36 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                 )
             }
             item { TaxReserveCard(state.result, state.currencyCode) }
+
+            // --- SECTION: EINNAHMEN (EXPANDABLE) ---
             item {
-                SummaryRow(
+                ExpandableSummaryCard(
                     label = "Einnahmen",
-                    amount = state.result.totalIncome,
+                    totalAmount = state.result.totalIncome,
                     currency = state.currencyCode,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
+                    isExpanded = isIncomeExpanded,
+                    onExpandToggle = { isIncomeExpanded = !isIncomeExpanded },
+                    // Hier die Liste der erfassten Einnahmen übergeben:
+                    items = state.result.incomeItems // Name ggf. an dein Model anpassen
                 )
             }
+
+            // --- SECTION: AUSGABEN (EXPANDABLE) ---
             item {
-                SummaryRow(
+                ExpandableSummaryCard(
                     label = "Ausgaben",
-                    amount = state.result.totalExpenses,
+                    totalAmount = state.result.totalExpenses,
                     currency = state.currencyCode,
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.error,
+                    isExpanded = isExpensesExpanded,
+                    onExpandToggle = { isExpensesExpanded = !isExpensesExpanded },
+                    // Hier die Liste der erfassten Ausgaben übergeben:
+                    items = state.result.expenseItems // Name ggf. an dein Model anpassen
                 )
             }
+
+            // Unverändertes Feld (Bleibt statisch)
             item {
                 SummaryRow(
                     label = "Frei verfügbar (nach Rücklage & Sparziel)",
@@ -82,7 +104,3 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
         }
     }
 }
-
-
-
-

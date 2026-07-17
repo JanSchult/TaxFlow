@@ -7,4 +7,6 @@ data class TaxReserveResult(
     val taxReserveAmount: Double,
     val availableAfterReserve: Double,
     val savingsGoalAmount: Double,
+    val incomeItems: List<Transaction> = emptyList(),
+    val expenseItems: List<Transaction> = emptyList()
 )

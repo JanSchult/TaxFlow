@@ -11,10 +11,15 @@ class CalculateTaxReserveUseCase {
         transactions: List<Transaction>,
         settings: UserSettings
     ): TaxReserveResult {
-        val income = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
-        val expenses = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
-        val profit = (income - expenses).coerceAtLeast(0.0)
+        // Hier trennen wir die Listen direkt auf
+        val incomeItems = transactions.filter { it.type == TransactionType.INCOME }
+        val expenseItems = transactions.filter { it.type == TransactionType.EXPENSE }
 
+        // Summen bilden aus den gefilterten Listen
+        val income = incomeItems.sumOf { it.amount }
+        val expenses = expenseItems.sumOf { it.amount }
+
+        val profit = (income - expenses).coerceAtLeast(0.0)
         val effectiveRate = (settings.taxRatePercent + settings.bufferPercent) / 100.0
         val taxReserve = profit * effectiveRate
         val savingsGoal = settings.monthlySavingsGoal
@@ -26,7 +31,10 @@ class CalculateTaxReserveUseCase {
             profit = profit,
             taxReserveAmount = taxReserve,
             availableAfterReserve = available,
-            savingsGoalAmount = savingsGoal
+            savingsGoalAmount = savingsGoal,
+            // Hier die Listen an das Ergebnis übergeben:
+            incomeItems = incomeItems,
+            expenseItems = expenseItems
         )
     }
 }
