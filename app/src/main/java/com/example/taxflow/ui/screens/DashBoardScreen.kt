@@ -91,7 +91,16 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                     items = state.result.expenseItems // Name ggf. an dein Model anpassen
                 )
             }
-
+            if (state.result.savingsGoalAmount > 0) {
+                item {
+                    SummaryRow(
+                        label = "Sparziel",
+                        amount = state.result.savingsGoalAmount,
+                        currency = state.currencyCode,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+            }
             // Unverändertes Feld (Bleibt statisch)
             item {
                 SummaryRow(

@@ -18,9 +18,19 @@ class CategoryRepositoryImpl(
 }
 
 private fun CategoryEntity.toDomain() = Category(
-    id = id, name = name, type = type, colorHex = colorHex
+    id = id,
+    name = name,
+    type = type,
+    colorHex = colorHex,
+    isDefault = isDefault,
+    supportsMileageCalculator = supportsMileageCalculator
 )
 
 private fun Category.toEntity() = CategoryEntity(
-    id = id, name = name, type = type, colorHex = colorHex
+    id = id,
+    name = name,
+    type = type,
+    colorHex = colorHex,
+    isDefault = isDefault,
+    supportsMileageCalculator = supportsMileageCalculator
 )

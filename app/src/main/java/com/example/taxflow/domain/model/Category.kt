@@ -5,5 +5,6 @@ data class Category(
     val name: String,
     val type: TransactionType,
     val colorHex: String = "#4C6EF5",
-    val isDeleted: Boolean = false
+    val isDefault: Boolean = false,
+    val supportsMileageCalculator: Boolean = false
 )

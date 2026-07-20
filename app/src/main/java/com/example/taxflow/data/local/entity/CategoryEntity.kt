@@ -6,9 +6,10 @@ import com.example.taxflow.domain.model.TransactionType
 
 @Entity(tableName = "categories")
 data class CategoryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
     val name: String,
     val type: TransactionType,
     val colorHex: String,
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
+    val supportsMileageCalculator: Boolean = false
 )

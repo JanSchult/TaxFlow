@@ -8,6 +8,7 @@ import com.example.taxflow.data.repository.TransactionRepository
 import com.example.taxflow.domain.model.Category
 import com.example.taxflow.domain.model.Transaction
 import com.example.taxflow.domain.model.TransactionType
+import com.example.taxflow.domain.model.VehicleType
 import com.example.taxflow.viewModel.uiState.AddTransactionUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,24 +26,27 @@ class AddTransactionViewModel(
     private val _uiState = MutableStateFlow(AddTransactionUiState())
     val uiState: StateFlow<AddTransactionUiState> = _uiState
 
+    val categories: StateFlow<List<Category>> = categoryRepository.getAll()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
+        // Falls ein Beleg-Scan gerade ein Ergebnis abgelegt hat, direkt übernehmen.
         receiptDraftHolder.consume()?.let { draft ->
             _uiState.value = _uiState.value.copy(
                 amountInput = draft.amount?.toString().orEmpty(),
                 note = draft.vendorGuess.orEmpty(),
                 date = draft.date ?: _uiState.value.date
-                // Kategorie bewusst NICHT automatisch setzen – das soll der Nutzer
-                // weiterhin selbst wählen, da eine verlässliche Kategorie-Zuordnung
-                // aus dem Belegtext allein nicht robust genug ist.
+                // Kategorie bewusst nicht automatisch setzen - siehe OCR-Feature-Doku.
             )
         }
     }
 
-    val categories: StateFlow<List<Category>> = categoryRepository.getAll()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     fun onTypeChanged(type: TransactionType) {
-        _uiState.value = _uiState.value.copy(type = type, selectedCategoryId = null)
+        _uiState.value = _uiState.value.copy(
+            type = type,
+            selectedCategoryId = null,
+            useMileageCalculator = false
+        )
     }
 
     fun onAmountChanged(value: String) {
@@ -54,12 +58,48 @@ class AddTransactionViewModel(
     }
 
     fun onCategorySelected(categoryId: Long) {
-        _uiState.value = _uiState.value.copy(selectedCategoryId = categoryId)
+        val stillSupportsCalculator = categories.value
+            .find { it.id == categoryId }
+            ?.supportsMileageCalculator == true
+
+        _uiState.value = _uiState.value.copy(
+            selectedCategoryId = categoryId,
+            // Rechner ausblenden, wenn eine Kategorie ohne Kilometerpauschale gewählt wird.
+            useMileageCalculator = _uiState.value.useMileageCalculator && stillSupportsCalculator
+        )
     }
 
     fun onDateChanged(date: LocalDate) {
         _uiState.value = _uiState.value.copy(date = date)
     }
+
+    // --- Fahrtkostenrechner -------------------------------------------------
+
+    fun onToggleMileageCalculator(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(useMileageCalculator = enabled)
+        if (enabled) recalculateMileageAmount()
+    }
+
+    fun onKilometersChanged(value: String) {
+        _uiState.value = _uiState.value.copy(kilometersInput = value)
+        recalculateMileageAmount()
+    }
+
+    fun onVehicleTypeChanged(type: VehicleType) {
+        _uiState.value = _uiState.value.copy(vehicleType = type)
+        recalculateMileageAmount()
+    }
+
+    private fun recalculateMileageAmount() {
+        val state = _uiState.value
+        val km = state.kilometersInput.replace(",", ".").toDoubleOrNull() ?: return
+        val amount = km * state.vehicleType.ratePerKm
+        _uiState.value = _uiState.value.copy(
+            amountInput = "%.2f".format(amount).replace(".", ",")
+        )
+    }
+
+    // -------------------------------------------------------------------------
 
     fun save() {
         val state = _uiState.value
