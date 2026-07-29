@@ -18,4 +18,7 @@ interface TaxDeadlineDao {
     suspend fun delete(deadline: TaxDeadlineEntity)
     @Query("SELECT * FROM tax_deadline ORDER BY dueDate ASC")
     fun getAll(): Flow<List<TaxDeadlineEntity>>
+
+    @Query("DELETE FROM tax_deadline")
+    suspend fun deleteAll()
 }

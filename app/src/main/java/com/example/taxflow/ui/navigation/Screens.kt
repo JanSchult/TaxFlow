@@ -9,4 +9,5 @@ sealed class Screen(val route: String, val label: String) {
     data object Paywall : Screen("paywall", "Premium")
     data object ReceiptScan : Screen("receipt_scan", "Beleg scannen")
     data object Export : Screen("export", "Export")
+    data object Backup : Screen("backup", "Backup")
 }

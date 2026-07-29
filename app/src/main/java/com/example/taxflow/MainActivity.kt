@@ -13,7 +13,7 @@ import com.example.taxflow.ui.theme.TaxFlowTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        installSplashScreen()
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

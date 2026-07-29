@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
@@ -22,7 +23,8 @@ import com.example.taxflow.viewModel.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
+fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel(),
+                   onNavigateToBackup: () -> Unit) {
     val settings by viewModel.settings.collectAsState()
 
     var taxRate by remember(settings.taxRatePercent) { mutableFloatStateOf(settings.taxRatePercent.toFloat()) }
@@ -80,5 +82,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
             "Diese Werte fließen direkt in die Berechnung deiner Steuerrücklage ein.",
             style = MaterialTheme.typography.bodyMedium
         )
+        OutlinedButton(onClick = onNavigateToBackup, modifier = Modifier.fillMaxWidth()) {
+            Text("Backup & Wiederherstellung")
+        }
     }
 }

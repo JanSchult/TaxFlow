@@ -3,6 +3,8 @@ package com.example.taxflow.di
 import com.example.taxflow.billigmanager.BillingManager
 import com.example.taxflow.data.OnboardingDataStore
 import com.example.taxflow.data.PdfReportGenerator
+import com.example.taxflow.data.backup.AutoBackupDataStore
+import com.example.taxflow.data.backup.BackupManager
 import com.example.taxflow.data.local.database.AppDatabase
 import com.example.taxflow.data.notification.NotificationHelper
 import com.example.taxflow.data.notification.NotifiedRemindersDataStore
@@ -22,6 +24,7 @@ import com.example.taxflow.data.settings.PremiumStatusDataStore
 import com.example.taxflow.data.settings.SettingsDataStore
 import com.example.taxflow.domain.usecase.CalculateTaxReserveUseCase
 import com.example.taxflow.viewModel.AddTransactionViewModel
+import com.example.taxflow.viewModel.BackupViewModel
 import com.example.taxflow.viewModel.DashboardViewModel
 import com.example.taxflow.viewModel.DeadlinesViewModel
 import com.example.taxflow.viewModel.ExportViewModel
@@ -42,6 +45,15 @@ val appModule = module {
     single { get<AppDatabase>().transactionDao() }
     single { get<AppDatabase>().categoryDao() }
     single { get<AppDatabase>().taxDeadlineDao() }
+    single {
+        BackupManager(
+            database = get(),
+            transactionDao = get(),
+            categoryDao = get(),
+            deadlineDao = get(),
+            settingsRepository = get()
+        )
+    }
 
     // Settings (DataStore)
     single { SettingsDataStore(androidContext()) }
@@ -53,6 +65,7 @@ val appModule = module {
     single { NotificationHelper(androidContext()) }
     single { NotifiedRemindersDataStore(androidContext()) }
     single { OnboardingDataStore(androidContext()) }
+    single { AutoBackupDataStore(androidContext()) }          // ← neu hinzufügen, falls noch nicht vorhanden
 
     // Repositories
     single<TransactionRepository> { TransactionRepositoryImpl(get()) }
@@ -75,4 +88,6 @@ val appModule = module {
     viewModel { ReceiptScanViewModel(get(), get()) }
     viewModel { ExportViewModel(get(), get(), get()) }
     viewModel { OnboardingViewModel(get()) }
+    viewModel { BackupViewModel(get(), get()) }
+
 }
