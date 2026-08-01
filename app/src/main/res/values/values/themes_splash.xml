@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash-Theme: wird nur beim Kaltstart kurz angezeigt, dann auf das normale App-Theme umgeschaltet -->
+    <style name="Theme.TaxFlow.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <!-- Nach dem Splash direkt ins normale Compose-Theme wechseln -->
+        <item name="postSplashScreenTheme">@style/Theme.TaxFlow</item>
+    </style>
+</resources>
