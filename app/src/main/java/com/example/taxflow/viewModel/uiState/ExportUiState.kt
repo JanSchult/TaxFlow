@@ -1,7 +1,8 @@
 package com.example.taxflow.viewModel.uiState
 
-import com.example.taxflow.domain.model.ExportMode
-import com.example.taxflow.domain.model.ExportPeriodType
+
+import com.example.taxflow.domain.usecase.ExportMode
+import com.example.taxflow.domain.usecase.ExportPeriodType
 import java.io.File
 
 data class ExportUiState(

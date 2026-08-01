@@ -35,13 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.taxflow.domain.model.TaxDeadline
-import com.example.taxflow.ui.components.AddDeadlineDialog // Ggf. erweitern oder klonen für Edit
+import com.example.shared2.domain.model.TaxDeadline
+import com.example.taxflow.ui.components.AddDeadlineDialog
 import com.example.taxflow.ui.components.PremiumGate
 import com.example.taxflow.viewModel.DeadlinesViewModel
 import com.example.taxflow.viewModel.PremiumStatusViewModel
 import org.koin.androidx.compose.koinViewModel
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun DeadlinesScreen(
@@ -53,10 +52,8 @@ fun DeadlinesScreen(
     val deadlines by viewModel.deadlines.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
-    // Hält die Frist, die gerade bearbeitet wird (null = kein Dialog offen)
     var deadlineToEdit by remember { mutableStateOf<TaxDeadline?>(null) }
 
-    val formatter = remember { DateTimeFormatter.ofPattern("dd.MM.yyyy") }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()){}
 
@@ -87,18 +84,26 @@ fun DeadlinesScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(deadlines) { deadline ->
+                        // Datum manuell für kotlinx-datetime formatieren
+                        val formattedDate = remember(deadline.dueDate) {
+                            val day = deadline.dueDate.dayOfMonth.toString().padStart(2, '0')
+                            val month = deadline.dueDate.monthNumber.toString().padStart(2, '0')
+                            val year = deadline.dueDate.year
+                            "$day.$month.$year"
+                        }
+
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier.padding(12.dp).fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Column(modifier = Modifier.weight(1f)) { // weight sorgt dafür, dass Text nicht die Buttons wegdrückt
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         deadline.title,
                                         style = MaterialTheme.typography.titleMedium
                                     )
-                                    Text("Fällig am ${deadline.dueDate.format(formatter)}")
+                                    Text("Fällig am $formattedDate")
                                     if (deadline.note.isNotBlank()) {
                                         Text(
                                             deadline.note,
@@ -113,7 +118,11 @@ fun DeadlinesScreen(
                                         Icon(Icons.Filled.Edit, contentDescription = "Bearbeiten")
                                     }
                                     IconButton(onClick = { viewModel.delete(deadline) }) {
-                                        Icon(Icons.Filled.Delete, contentDescription = "Löschen", tint = MaterialTheme.colorScheme.error)
+                                        Icon(
+                                            Icons.Filled.Delete,
+                                            contentDescription = "Löschen",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
                                     }
                                     Checkbox(
                                         checked = deadline.isPaid,
@@ -139,15 +148,12 @@ fun DeadlinesScreen(
         }
 
         // Dialog für das Bearbeiten einer bestehenden Frist
-        if (deadlineToEdit != null) {
-            // Tipp: Du kannst deinen AddDeadlineDialog so anpassen, dass er eine optionale 'initialDeadline' akzeptiert,
-            // um die Felder vorauszufüllen. Alternativ erstellst du einen EditDeadlineDialog.
+        deadlineToEdit?.let { currentDeadline ->
             AddDeadlineDialog(
-                // deadlineToEdit ist hier sicher nicht null (Smart Cast dank UI-Check)
+                initialDeadline = currentDeadline, // Übergibt die zu bearbeitende Frist
                 onDismiss = { deadlineToEdit = null },
                 onConfirm = { title, date, note ->
-                    // Hier erstellst du die aktualisierte Version des Objekts
-                    val updatedDeadline = deadlineToEdit!!.copy(
+                    val updatedDeadline = currentDeadline.copy(
                         title = title,
                         dueDate = date,
                         note = note

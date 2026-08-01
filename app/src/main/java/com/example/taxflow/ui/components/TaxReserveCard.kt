@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.taxflow.domain.model.TaxReserveResult
+import com.example.shared2.domain.model.TaxReserveResult
 import com.example.taxflow.util.formatCurrency
 
 @Composable

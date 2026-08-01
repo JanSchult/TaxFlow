@@ -1,6 +1,7 @@
 package com.example.taxflow.viewModel.uiState
 
-import com.example.taxflow.domain.model.ReceiptScanData
+import com.example.taxflow.domain.usecase.ReceiptScanData
+
 
 data class ReceiptScanUiState(
     val isProcessing: Boolean = false,

@@ -1,6 +1,6 @@
 package com.example.taxflow.data.orc
 
-import com.example.taxflow.domain.model.ReceiptScanData
+import com.example.taxflow.domain.usecase.ReceiptScanData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

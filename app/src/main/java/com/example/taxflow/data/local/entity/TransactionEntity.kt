@@ -4,8 +4,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.taxflow.domain.model.TransactionType
-import java.time.LocalDate
+import com.example.shared2.domain.model.TransactionType
+import kotlinx.datetime.LocalDate
 
 @Entity(tableName = "transactions",
     foreignKeys = [

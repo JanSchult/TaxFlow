@@ -9,8 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.example.taxflow.domain.model.TaxDeadline
-import java.time.format.DateTimeFormatter
+import com.example.shared2.domain.model.TaxDeadline
 
 class NotificationHelper(private val context: Context) {
 
@@ -45,8 +44,14 @@ class NotificationHelper(private val context: Context) {
             1 -> "Morgen fällig: ${deadline.title}"
             else -> "${deadline.title} in $daysUntil Tagen fällig"
         }
-        val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-        val text = "Fällig am ${deadline.dueDate.format(dateFormatter)}" +
+
+        // Datum manuell formatieren (dd.MM.yyyy)
+        val day = deadline.dueDate.dayOfMonth.toString().padStart(2, '0')
+        val month = deadline.dueDate.monthNumber.toString().padStart(2, '0')
+        val year = deadline.dueDate.year
+        val formattedDate = "$day.$month.$year"
+
+        val text = "Fällig am $formattedDate" +
                 if (deadline.note.isNotBlank()) " – ${deadline.note}" else ""
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)

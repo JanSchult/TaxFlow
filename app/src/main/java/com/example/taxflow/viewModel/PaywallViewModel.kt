@@ -4,8 +4,8 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
+import com.example.shared2.data.PremiumRepository
 import com.example.taxflow.billigmanager.BillingManager
-import com.example.taxflow.data.repository.PremiumRepository
 import com.example.taxflow.viewModel.uiState.PaywallUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

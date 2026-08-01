@@ -1,14 +1,15 @@
 package com.example.taxflow.data.notification
-
-import com.example.taxflow.data.repository.TaxDeadlineRepository
+import com.example.shared2.data.TaxDeadlineRepository
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.flow.first
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.daysUntil
 
 class DeadlineReminderWorker(
     context: Context,
@@ -27,11 +28,15 @@ class DeadlineReminderWorker(
     override suspend fun doWork(): Result {
         return try {
             val openDeadlines = deadlineRepository.getAll().first().filter { !it.isPaid }
-            val today = LocalDate.now()
+
+            // 1. Aktuelles Datum mit kotlinx-datetime holen
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             val alreadyNotified = notifiedReminders.getNotifiedKeys()
 
             for (deadline in openDeadlines) {
-                val daysUntil = ChronoUnit.DAYS.between(today, deadline.dueDate).toInt()
+                // 2. Differenz in Tagen berechnen (replacement für ChronoUnit.DAYS.between)
+                val daysUntil = today.daysUntil(deadline.dueDate)
+
                 if (daysUntil in REMINDER_MILESTONES) {
                     val reminderKey = "${deadline.id}_$daysUntil"
                     if (reminderKey !in alreadyNotified) {

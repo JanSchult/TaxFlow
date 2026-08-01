@@ -1,11 +1,12 @@
 package com.example.taxflow.data.repository
 
+import com.example.shared2.data.TransactionRepository
+import com.example.shared2.domain.model.Transaction
 import com.example.taxflow.data.local.dao.TransactionDao
 import com.example.taxflow.data.local.entity.TransactionEntity
-import com.example.taxflow.domain.model.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 class TransactionRepositoryImpl(
     private val dao: TransactionDao
@@ -14,7 +15,7 @@ class TransactionRepositoryImpl(
     override fun getAll(): Flow<List<Transaction>> =
         dao.getAll().map { list -> list.map { it.toDomain() } }
 
-    override fun getBetween(from: LocalDate, to: LocalDate): Flow<List<Transaction>> =
+    override fun getBetween(from:LocalDate, to: LocalDate): Flow<List<Transaction>> =
         dao.getBetween(from, to).map { list -> list.map { it.toDomain() } }
 
     override suspend fun add(transaction: Transaction): Long =

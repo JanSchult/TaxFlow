@@ -10,7 +10,6 @@ import com.example.taxflow.data.local.dao.TransactionDao
 import com.example.taxflow.data.local.entity.TransactionEntity
 import com.example.taxflow.data.local.entity.CategoryEntity
 import com.example.taxflow.data.local.entity.TaxDeadlineEntity
-import com.example.taxflow.domain.model.Converters
 import androidx.room.Room
 import com.example.taxflow.data.local.DefaultCategories
 import kotlinx.coroutines.CoroutineScope

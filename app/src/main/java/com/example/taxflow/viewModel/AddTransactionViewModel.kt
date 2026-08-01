@@ -2,20 +2,20 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.shared2.data.CategoryRepository
+import com.example.shared2.data.TransactionRepository
+import com.example.shared2.domain.model.Category
+import com.example.shared2.domain.model.Transaction
+import com.example.shared2.domain.model.TransactionType
 import com.example.taxflow.data.orc.ReceiptDraftHolder
-import com.example.taxflow.data.repository.CategoryRepository
-import com.example.taxflow.data.repository.TransactionRepository
-import com.example.taxflow.domain.model.Category
-import com.example.taxflow.domain.model.Transaction
-import com.example.taxflow.domain.model.TransactionType
-import com.example.taxflow.domain.model.VehicleType
+import com.example.taxflow.domain.usecase.VehicleType
 import com.example.taxflow.viewModel.uiState.AddTransactionUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 
 class AddTransactionViewModel(
     private val transactionRepository: TransactionRepository,
@@ -35,7 +35,7 @@ class AddTransactionViewModel(
             _uiState.value = _uiState.value.copy(
                 amountInput = draft.amount?.toString().orEmpty(),
                 note = draft.vendorGuess.orEmpty(),
-                date = draft.date ?: _uiState.value.date
+                date = (draft.date ?: _uiState.value.date) as LocalDate
                 // Kategorie bewusst nicht automatisch setzen - siehe OCR-Feature-Doku.
             )
         }

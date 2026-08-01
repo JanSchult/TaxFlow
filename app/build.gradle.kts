@@ -47,6 +47,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":shared2"))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.core.ktx)
@@ -75,6 +76,8 @@ dependencies {
     implementation(libs.firebase.crashlytics)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.splashscreen)
+    implementation(libs.kotlinx.datetime)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

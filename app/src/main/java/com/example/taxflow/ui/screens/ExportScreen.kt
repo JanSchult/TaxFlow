@@ -22,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import com.example.taxflow.domain.model.ExportMode
-import com.example.taxflow.domain.model.ExportPeriodType
+import com.example.taxflow.domain.usecase.ExportMode
+import com.example.taxflow.domain.usecase.ExportPeriodType
 import com.example.taxflow.viewModel.ExportViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.io.File

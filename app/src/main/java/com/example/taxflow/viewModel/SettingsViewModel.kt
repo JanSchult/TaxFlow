@@ -2,8 +2,8 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taxflow.data.repository.SettingsRepository
-import com.example.taxflow.domain.model.UserSettings
+import com.example.shared2.data.SettingsRepository
+import com.example.shared2.domain.model.UserSettings
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

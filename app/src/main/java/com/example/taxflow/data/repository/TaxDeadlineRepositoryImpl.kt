@@ -1,8 +1,9 @@
 package com.example.taxflow.data.repository
 
+import com.example.shared2.data.TaxDeadlineRepository
+import com.example.shared2.domain.model.TaxDeadline
 import com.example.taxflow.data.local.dao.TaxDeadlineDao
 import com.example.taxflow.data.local.entity.TaxDeadlineEntity
-import com.example.taxflow.domain.model.TaxDeadline
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

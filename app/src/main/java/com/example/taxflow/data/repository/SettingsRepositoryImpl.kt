@@ -1,7 +1,8 @@
 package com.example.taxflow.data.repository
 
+import com.example.shared2.data.SettingsRepository
+import com.example.shared2.domain.model.UserSettings
 import com.example.taxflow.data.settings.SettingsDataStore
-import com.example.taxflow.domain.model.UserSettings
 import kotlinx.coroutines.flow.Flow
 
 class SettingsRepositoryImpl(

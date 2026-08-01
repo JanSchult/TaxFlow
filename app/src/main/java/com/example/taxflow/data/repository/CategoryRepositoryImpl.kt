@@ -1,8 +1,9 @@
 package com.example.taxflow.data.repository
 
+import com.example.shared2.data.CategoryRepository
+import com.example.shared2.domain.model.Category
 import com.example.taxflow.data.local.dao.CategoryDao
 import com.example.taxflow.data.local.entity.CategoryEntity
-import com.example.taxflow.domain.model.Category
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

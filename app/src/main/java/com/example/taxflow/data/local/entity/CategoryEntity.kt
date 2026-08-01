@@ -2,7 +2,7 @@ package com.example.taxflow.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.taxflow.domain.model.TransactionType
+import com.example.shared2.domain.model.TransactionType
 
 @Entity(tableName = "categories")
 data class CategoryEntity(

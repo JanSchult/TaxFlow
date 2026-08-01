@@ -6,20 +6,27 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
-import com.example.taxflow.domain.model.Category
-import com.example.taxflow.domain.model.Transaction
-import com.example.taxflow.domain.model.TransactionType
+import com.example.shared2.domain.model.Category
+import com.example.shared2.domain.model.Transaction
+import com.example.shared2.domain.model.TransactionType
 import java.io.File
 import java.io.FileOutputStream
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.datetime.toJavaLocalDate
 
 /**
  * Erzeugt PDF-Exporte für den Steuerberater komplett mit Android-Bordmitteln
  * (android.graphics.pdf.PdfDocument) – keine externe Bibliothek, kein
  * zusätzliches Versionsrisiko.
+ *
+ * WICHTIG zum Datumsumgang: Diese Klasse arbeitet INTERN mit java.time.LocalDate
+ * (für .format() und .now(), reines Android/JVM). Transaction.date kommt aus dem
+ * shared-Modul als kotlinx.datetime.LocalDate - deshalb wird jedes tx.date an der
+ * Verwendungsstelle mit .toJavaLocalDate() umgewandelt, statt kotlinx.datetime.LocalDate
+ * hier im ganzen File zu importieren (das würde mit java.time.LocalDate kollidieren).
  *
  * Wichtig: kein amtliches/steuerrechtlich geprüftes Dokument, nur eine
  * strukturierte Übersicht zur Vorlage/Weiterverarbeitung durch den Steuerberater.
@@ -57,7 +64,7 @@ class PdfReportGenerator(private val context: Context) {
         y += lineHeight
         y = drawTableHeader(canvas, y)
 
-        for (tx in transactions.sortedBy { it.date }) {
+        for (tx in transactions.sortedBy {  transaction: Transaction -> transaction.date }) {
             if (y > pageHeight - 80) {
                 document.finishPage(page)
                 pageNumber++
@@ -96,12 +103,13 @@ class PdfReportGenerator(private val context: Context) {
             val document = PdfDocument()
             val page = document.startPage(PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create())
             val canvas = page.canvas
-            var y = drawHeader(canvas, "Buchungsbeleg", tx.date.format(dateFormatter), marginTop)
+            val txJavaDate = tx.date.toJavaLocalDate()
+            var y = drawHeader(canvas, "Buchungsbeleg", txJavaDate.format(dateFormatter), marginTop)
             y += lineHeight * 2
 
             val typeLabel = if (tx.type == TransactionType.INCOME) "Einnahme" else "Ausgabe"
             val rows = listOf(
-                "Datum" to tx.date.format(dateFormatter),
+                "Datum" to txJavaDate.format(dateFormatter),
                 "Typ" to typeLabel,
                 "Kategorie" to (categoryNames[tx.categoryId] ?: "Sonstige"),
                 "Betrag" to currencyFormat.format(tx.amount),
@@ -147,7 +155,7 @@ class PdfReportGenerator(private val context: Context) {
 
     private fun drawTransactionRow(canvas: Canvas, tx: Transaction, categoryName: String, startY: Float): Float {
         val typeLabel = if (tx.type == TransactionType.INCOME) "Einnahme" else "Ausgabe"
-        canvas.drawText(tx.date.format(dateFormatter), marginLeft, startY, bodyPaint)
+        canvas.drawText(tx.date.toJavaLocalDate().format(dateFormatter), marginLeft, startY, bodyPaint)
         canvas.drawText(categoryName.take(22), marginLeft + 70f, startY, bodyPaint)
         canvas.drawText(tx.note.take(25), marginLeft + 220f, startY, bodyPaint)
         canvas.drawText(typeLabel, marginLeft + 380f, startY, bodyPaint)

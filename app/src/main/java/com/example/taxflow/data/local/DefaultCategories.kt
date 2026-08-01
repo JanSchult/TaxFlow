@@ -1,7 +1,7 @@
 package com.example.taxflow.data.local
 
+import com.example.shared2.domain.model.TransactionType
 import com.example.taxflow.data.local.entity.CategoryEntity
-import com.example.taxflow.domain.model.TransactionType
 object DefaultCategories {
 
     const val MILEAGE_CATEGORY_NAME = "Fahrtkosten & Reisen"

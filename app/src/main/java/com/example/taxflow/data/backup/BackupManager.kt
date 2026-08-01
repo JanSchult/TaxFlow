@@ -1,6 +1,9 @@
 package com.example.taxflow.data.backup
 
 import androidx.room.withTransaction
+import com.example.shared2.data.SettingsRepository
+import com.example.shared2.domain.model.TransactionType
+import com.example.shared2.domain.model.UserSettings
 import com.example.taxflow.data.local.dao.CategoryDao
 import com.example.taxflow.data.local.dao.TaxDeadlineDao
 import com.example.taxflow.data.local.dao.TransactionDao
@@ -8,13 +11,13 @@ import com.example.taxflow.data.local.database.AppDatabase
 import com.example.taxflow.data.local.entity.CategoryEntity
 import com.example.taxflow.data.local.entity.TaxDeadlineEntity
 import com.example.taxflow.data.local.entity.TransactionEntity
-import com.example.taxflow.data.repository.SettingsRepository
-import com.example.taxflow.domain.model.TransactionType
-import com.example.taxflow.domain.model.UserSettings
 import kotlinx.coroutines.flow.first
+import kotlinx.datetime.LocalDate
 import org.json.JSONArray
 import org.json.JSONObject
-import java.time.LocalDate
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 private const val SCHEMA_VERSION = 1
 
@@ -43,8 +46,7 @@ class BackupManager(
 
         val root = JSONObject()
         root.put("schemaVersion", SCHEMA_VERSION)
-        root.put("exportedAt", LocalDate.now().toString())
-
+        root.put("exportedAt", Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.toString())
         root.put("settings", JSONObject().apply {
             put("taxRatePercent", settings.taxRatePercent)
             put("currencyCode", settings.currencyCode)

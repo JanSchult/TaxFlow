@@ -1,0 +1,3 @@
+package com.example.taxflow.domain.usecase
+
+enum class ExportPeriodType { MONTH, YEAR }

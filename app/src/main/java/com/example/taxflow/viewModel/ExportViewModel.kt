@@ -2,19 +2,24 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.shared2.data.CategoryRepository
+import com.example.shared2.data.TransactionRepository
 import com.example.taxflow.data.PdfReportGenerator
-import com.example.taxflow.data.repository.CategoryRepository
-import com.example.taxflow.data.repository.TransactionRepository
-import com.example.taxflow.domain.model.ExportMode
-import com.example.taxflow.domain.model.ExportPeriodType
+import com.example.taxflow.domain.usecase.ExportMode
+import com.example.taxflow.domain.usecase.ExportPeriodType
 import com.example.taxflow.viewModel.uiState.ExportUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import java.io.File
-import java.time.LocalDate
-import java.time.YearMonth
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 
 class ExportViewModel(
     private val transactionRepository: TransactionRepository,
@@ -37,14 +42,30 @@ class ExportViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isGenerating = true, errorMessage = null, generatedFiles = null)
             try {
-                val today = LocalDate.now()
+                // 1. Heutiges Datum holen
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
                 val (from, to, label) = when (_uiState.value.periodType) {
                     ExportPeriodType.MONTH -> {
-                        val ym = YearMonth.from(today)
-                        Triple(ym.atDay(1), ym.atEndOfMonth(), "Monat ${ym.monthValue}/${ym.year}")
+                        // Erster Tag des aktuellen Monats:
+                        val firstDay = LocalDate(today.year, today.monthNumber, 1)
+
+                        // Letzter Tag des aktuellen Monats: (1. des nächsten Monats minus 1 Tag)
+                        val nextMonthFirstDay = firstDay.plus(DatePeriod(months = 1))
+                        val lastDay = nextMonthFirstDay.minus(DatePeriod(days = 1))
+
+                        Triple(
+                            firstDay,
+                            lastDay,
+                            "Monat ${today.monthNumber}/${today.year}"
+                        )
                     }
                     ExportPeriodType.YEAR -> {
-                        Triple(LocalDate.of(today.year, 1, 1), LocalDate.of(today.year, 12, 31), "Jahr ${today.year}")
+                        Triple(
+                            LocalDate(today.year, 1, 1),
+                            LocalDate(today.year, 12, 31),
+                            "Jahr ${today.year}"
+                        )
                     }
                 }
 

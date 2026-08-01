@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.example.taxflow.data.orc.ReceiptDraftHolder
 import com.example.taxflow.data.orc.ReceiptParser
-import com.example.taxflow.domain.model.ReceiptScanData
+import com.example.taxflow.domain.usecase.ReceiptScanData
 
 
 class ReceiptScanViewModel(

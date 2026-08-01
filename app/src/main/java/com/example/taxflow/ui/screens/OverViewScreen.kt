@@ -21,7 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.taxflow.domain.model.OverviewMode
+import com.example.taxflow.domain.usecase.OverviewMode
 import com.example.taxflow.ui.components.PremiumGate
 import com.example.taxflow.util.formatCurrency
 import com.example.taxflow.viewModel.OverviewViewModel

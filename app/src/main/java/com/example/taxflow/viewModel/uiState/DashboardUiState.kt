@@ -1,6 +1,7 @@
 package com.example.taxflow.viewModel.uiState
 
-import com.example.taxflow.domain.model.TaxReserveResult
+import com.example.shared2.domain.model.TaxReserveResult
+
 
 data class DashboardUiState(
     val currentMonthLabel: String = "",

@@ -24,8 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.taxflow.domain.model.Category
 import androidx.core.graphics.toColorInt
+import com.example.shared2.domain.model.Category
 
 /**
  * Ersetzt die horizontale Chip-Leiste: bei >5 Kategorien wird eine scrollbare

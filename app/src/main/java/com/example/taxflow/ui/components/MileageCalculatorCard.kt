@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.taxflow.domain.model.VehicleType
+import com.example.taxflow.domain.usecase.VehicleType
 
 @Composable
  fun MileageCalculatorCard(

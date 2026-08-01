@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "TaxFlow"
 include(":app")
- 
+include(":shared2")

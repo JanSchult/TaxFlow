@@ -1,5 +1,11 @@
 package com.example.taxflow.di
 
+import com.example.shared2.data.CategoryRepository
+import com.example.shared2.data.PremiumRepository
+import com.example.shared2.data.SettingsRepository
+import com.example.shared2.data.TaxDeadlineRepository
+import com.example.shared2.data.TransactionRepository
+import com.example.shared2.usecase.CalculateTaxReserveUseCase
 import com.example.taxflow.billigmanager.BillingManager
 import com.example.taxflow.data.OnboardingDataStore
 import com.example.taxflow.data.PdfReportGenerator
@@ -10,19 +16,13 @@ import com.example.taxflow.data.notification.NotificationHelper
 import com.example.taxflow.data.notification.NotifiedRemindersDataStore
 import com.example.taxflow.data.orc.ReceiptDraftHolder
 import com.example.taxflow.data.orc.ReceiptTextRecognizer
-import com.example.taxflow.data.repository.CategoryRepository
 import com.example.taxflow.data.repository.CategoryRepositoryImpl
-import com.example.taxflow.data.repository.PremiumRepository
 import com.example.taxflow.data.repository.PremiumRepositoryImpl
-import com.example.taxflow.data.repository.SettingsRepository
 import com.example.taxflow.data.repository.SettingsRepositoryImpl
-import com.example.taxflow.data.repository.TaxDeadlineRepository
 import com.example.taxflow.data.repository.TaxDeadlineRepositoryImpl
-import com.example.taxflow.data.repository.TransactionRepository
 import com.example.taxflow.data.repository.TransactionRepositoryImpl
 import com.example.taxflow.data.settings.PremiumStatusDataStore
 import com.example.taxflow.data.settings.SettingsDataStore
-import com.example.taxflow.domain.usecase.CalculateTaxReserveUseCase
 import com.example.taxflow.viewModel.AddTransactionViewModel
 import com.example.taxflow.viewModel.BackupViewModel
 import com.example.taxflow.viewModel.DashboardViewModel
@@ -80,7 +80,7 @@ val appModule = module {
     // ViewModels
     viewModel { DashboardViewModel(get(), get(), get()) }
     viewModel { AddTransactionViewModel(get(), get(), get()) }
-    viewModel { OverviewViewModel(get()) }
+    viewModel { OverviewViewModel(get<TransactionRepository>()) }
     viewModel { DeadlinesViewModel(get()) }
     viewModel { SettingsViewModel(get()) }
     viewModel { PaywallViewModel(get(), get()) }

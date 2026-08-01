@@ -2,19 +2,23 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.taxflow.data.repository.TransactionRepository
-import com.example.taxflow.domain.model.MonthSummary
-import com.example.taxflow.domain.model.OverviewMode
-import com.example.taxflow.domain.model.Transaction
-import com.example.taxflow.domain.model.TransactionType
+import com.example.shared2.data.TransactionRepository
+import com.example.shared2.domain.model.Transaction
+import com.example.shared2.domain.model.TransactionType
+import com.example.taxflow.domain.usecase.MonthSummary
+import com.example.taxflow.domain.usecase.OverviewMode
 import com.example.taxflow.viewModel.uiState.OverviewUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import java.time.LocalDate
-import java.time.YearMonth
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
 
 class OverviewViewModel(
 transactionRepository: TransactionRepository
@@ -44,32 +48,50 @@ transactionRepository: TransactionRepository
 
         return when (mode) {
             OverviewMode.MONTH -> {
-                val now = YearMonth.now()
+                // Aktuelles Datum in der lokalen Zeitzone holen
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+                // Auf den 1. des aktuellen Monats setzen, damit Datumsberechnungen exakt sind
+                val currentFirstOfMonth = LocalDate(today.year, today.monthNumber, 1)
+
                 (5 downTo 0).map { offset ->
-                    val ym = now.minusMonths(offset.toLong())
+                    // Vormonate mit DatePeriod(months = ...) abziehen
+                    val targetDate = currentFirstOfMonth.minus(DatePeriod(months = offset))
+
+                    val targetYear = targetDate.year
+                    val targetMonthNumber = targetDate.monthNumber
+
+                    // Filtern nach Jahr und Monat
                     val monthTx = transactions.filter {
-                        YearMonth.from(it.date) == ym
+                        it.date.year == targetYear && it.date.monthNumber == targetMonthNumber
                     }
+
+                    val income = monthTx.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+                    val expenses = monthTx.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+
                     MonthSummary(
-                        label = "${monthNames[ym.monthValue - 1]} ${ym.year % 100}",
-                        income = monthTx.filter { it.type == TransactionType.INCOME }.sumOf { it.amount },
-                        expenses = monthTx.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount },
-                        profit = monthTx.filter { it.type == TransactionType.INCOME }.sumOf { it.amount } -
-                                monthTx.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+                        label = "${monthNames[targetMonthNumber - 1]} ${targetYear % 100}",
+                        income = income,
+                        expenses = expenses,
+                        profit = income - expenses
                     )
                 }
             }
             OverviewMode.YEAR -> {
-                val currentYear = LocalDate.now().year
+                val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
+
                 (2 downTo 0).map { offset ->
                     val year = currentYear - offset
                     val yearTx = transactions.filter { it.date.year == year }
+
+                    val income = yearTx.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+                    val expenses = yearTx.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+
                     MonthSummary(
                         label = year.toString(),
-                        income = yearTx.filter { it.type == TransactionType.INCOME }.sumOf { it.amount },
-                        expenses = yearTx.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount },
-                        profit = yearTx.filter { it.type == TransactionType.INCOME }.sumOf { it.amount } -
-                                yearTx.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+                        income = income,
+                        expenses = expenses,
+                        profit = income - expenses
                     )
                 }
             }

@@ -8,7 +8,8 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.taxflow.data.local.entity.TransactionEntity
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
+
 
 @Dao
 interface TransactionDao {
