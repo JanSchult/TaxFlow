@@ -22,7 +22,7 @@ actual class BillingManager {
 
     actual fun launchPurchaseFlow(
         activity: PlatformActivity,
-        details1: com.android.billingclient.api.ProductDetails,
+        details1: Any,
         offerToken: String
     ) {}
 
