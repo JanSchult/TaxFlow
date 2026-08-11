@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.android.lint)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 kotlin {
@@ -61,7 +63,12 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.coroutines.core)   // ← neu, für Flow
-                implementation(libs.kotlinx.datetime)                  }
+                implementation(libs.kotlinx.datetime)
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
+                implementation(libs.androidx.datastore.preferences.core.v111)
+                implementation("io.insert-koin:koin-core:3.5.6")
+            }
         }
 
         commonTest {
@@ -72,7 +79,8 @@ kotlin {
 
         androidMain {
             dependencies {
-                // Add Android-specific dependencies here. Note that this source set depends on
+                implementation(libs.billing.ktx)
+                implementation("io.insert-koin:koin-android:3.5.6")                // Add Android-specific dependencies here. Note that this source set depends on
                 // commonMain by default and will correctly pull the Android artifacts of any KMP
                 // dependencies declared in commonMain.
             }
@@ -96,5 +104,17 @@ kotlin {
             }
         }
     }
+}
+// WICHTIG: KSP muss für JEDE Zielplattform einzeln konfiguriert werden.
+// Ein einzelnes "ksp(...)" wie im reinen Android-Modul reicht bei KMP nicht.
+dependencies {
+    add("kspCommonMainMetadata", libs.androidx.room.compiler)
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosX64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+}
 
+room {
+    schemaDirectory("$projectDir/schemas")
 }

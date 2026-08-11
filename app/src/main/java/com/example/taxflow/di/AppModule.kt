@@ -1,86 +1,53 @@
 package com.example.taxflow.di
 
-import com.example.shared2.data.CategoryRepository
-import com.example.shared2.data.PremiumRepository
-import com.example.shared2.data.SettingsRepository
-import com.example.shared2.data.TaxDeadlineRepository
-import com.example.shared2.data.TransactionRepository
-import com.example.shared2.usecase.CalculateTaxReserveUseCase
-import com.example.taxflow.billigmanager.BillingManager
+import com.example.shared2.data.repository.SettingsRepository
+import com.example.shared2.data.local.dao.TaxDeadlineDao
+import com.example.shared2.data.local.dao.CategoryDao
+import com.example.shared2.data.local.dao.TransactionDao
+import com.example.shared2.data.local.database.AppDatabase
+import com.example.shared2.data.repository.SettingsRepositoryImpl
 import com.example.taxflow.data.OnboardingDataStore
 import com.example.taxflow.data.PdfReportGenerator
 import com.example.taxflow.data.backup.AutoBackupDataStore
 import com.example.taxflow.data.backup.BackupManager
-import com.example.taxflow.data.local.database.AppDatabase
 import com.example.taxflow.data.notification.NotificationHelper
 import com.example.taxflow.data.notification.NotifiedRemindersDataStore
 import com.example.taxflow.data.orc.ReceiptDraftHolder
 import com.example.taxflow.data.orc.ReceiptTextRecognizer
-import com.example.taxflow.data.repository.CategoryRepositoryImpl
-import com.example.taxflow.data.repository.PremiumRepositoryImpl
-import com.example.taxflow.data.repository.SettingsRepositoryImpl
-import com.example.taxflow.data.repository.TaxDeadlineRepositoryImpl
-import com.example.taxflow.data.repository.TransactionRepositoryImpl
-import com.example.taxflow.data.settings.PremiumStatusDataStore
-import com.example.taxflow.data.settings.SettingsDataStore
-import com.example.taxflow.viewModel.AddTransactionViewModel
-import com.example.taxflow.viewModel.BackupViewModel
-import com.example.taxflow.viewModel.DashboardViewModel
-import com.example.taxflow.viewModel.DeadlinesViewModel
-import com.example.taxflow.viewModel.ExportViewModel
-import com.example.taxflow.viewModel.OnboardingViewModel
-import com.example.taxflow.viewModel.OverviewViewModel
-import com.example.taxflow.viewModel.PaywallViewModel
-import com.example.taxflow.viewModel.PremiumStatusViewModel
-import com.example.taxflow.viewModel.ReceiptScanViewModel
-import com.example.taxflow.viewModel.SettingsViewModel
-import org.koin.dsl.module
+import com.example.shared2.settings.SettingsDataStore
+import com.example.taxflow.viewModel.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
 val appModule = module {
-
-    // Database & DAOs
-    single { AppDatabase.getInstance(androidContext()) }
-    single { get<AppDatabase>().transactionDao() }
-    single { get<AppDatabase>().categoryDao() }
-    single { get<AppDatabase>().taxDeadlineDao() }
-    single {
-        BackupManager(
-            database = get(),
-            transactionDao = get(),
-            categoryDao = get(),
-            deadlineDao = get(),
-            settingsRepository = get()
-        )
-    }
-
-    // Settings (DataStore)
-    single { SettingsDataStore(androidContext()) }
-    single { BillingManager(androidContext()) }
-    single { PremiumStatusDataStore(androidContext()) }
+    // Android UI Helfer & Manager
+    single { SettingsDataStore(get(named("settingsDataStore"))) }
     single { ReceiptTextRecognizer() }
     single { ReceiptDraftHolder() }
     single { PdfReportGenerator(androidContext()) }
     single { NotificationHelper(androidContext()) }
     single { NotifiedRemindersDataStore(androidContext()) }
     single { OnboardingDataStore(androidContext()) }
-    single { AutoBackupDataStore(androidContext()) }          // ← neu hinzufügen, falls noch nicht vorhanden
+    single { AutoBackupDataStore(androidContext()) }
 
-    // Repositories
-    single<TransactionRepository> { TransactionRepositoryImpl(get()) }
-    single<CategoryRepository> { CategoryRepositoryImpl(get()) }
-    single<TaxDeadlineRepository> { TaxDeadlineRepositoryImpl(get()) }
+    single {
+        BackupManager(
+            database = get<AppDatabase>(),
+            transactionDao = get<TransactionDao>(),
+            categoryDao = get<CategoryDao>(),
+            deadlineDao = get<TaxDeadlineDao>(),
+            settingsRepository = get<SettingsRepository>()
+        )
+    }
+    //Repositorys
     single<SettingsRepository> { SettingsRepositoryImpl(get()) }
-    single<PremiumRepository> { PremiumRepositoryImpl(get(), get()) }
-
-    // Use cases
-    factory { CalculateTaxReserveUseCase() }
 
     // ViewModels
     viewModel { DashboardViewModel(get(), get(), get()) }
     viewModel { AddTransactionViewModel(get(), get(), get()) }
-    viewModel { OverviewViewModel(get<TransactionRepository>()) }
+    viewModel { OverviewViewModel(get()) }
     viewModel { DeadlinesViewModel(get()) }
     viewModel { SettingsViewModel(get()) }
     viewModel { PaywallViewModel(get(), get()) }
@@ -89,5 +56,4 @@ val appModule = module {
     viewModel { ExportViewModel(get(), get(), get()) }
     viewModel { OnboardingViewModel(get()) }
     viewModel { BackupViewModel(get(), get()) }
-
 }

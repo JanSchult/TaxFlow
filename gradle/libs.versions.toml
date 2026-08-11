@@ -2,6 +2,7 @@
 agp = "8.13.2"
 appcompat = "1.7.1"
 datastorePreferences = "1.2.1"
+datastorePreferencesCoreVersion = "1.1.1"
 firebaseBom = "34.14.1"
 kotlin = "2.2.0"
 coreKtx = "1.15.0"
@@ -30,12 +31,15 @@ kotlinStdlib = "2.2.0"
 kotlinTest = "2.2.0"
 runner = "1.5.2"
 core = "1.5.0"
+sqlite = "2.6.1"
+billingKtx = "9.1.0"
 
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-datastore-preferences-core-v111 = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferencesCoreVersion" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -73,6 +77,9 @@ kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", versio
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlinTest" }
 androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
 androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomKtx" }
+androidx-sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqlite" }
+billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billingKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -85,3 +92,4 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
+room = { id = "androidx.room", version.ref = "roomKtx" }

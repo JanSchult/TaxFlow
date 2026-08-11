@@ -2,7 +2,7 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.shared2.data.TransactionRepository
+import com.example.shared2.data.repository.TransactionRepository
 import com.example.shared2.domain.model.Transaction
 import com.example.shared2.domain.model.TransactionType
 import com.example.taxflow.domain.usecase.MonthSummary

@@ -4,8 +4,8 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
-import com.example.shared2.data.PremiumRepository
-import com.example.taxflow.billigmanager.BillingManager
+import com.example.shared2.data.repository.PremiumRepository
+import com.example.shared2.billingmanager.BillingManager
 import com.example.taxflow.viewModel.uiState.PaywallUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,7 +55,7 @@ class PaywallViewModel(
             }
 
             val details = billingManager.queryPremiumProductDetails()
-            productDetails = details
+            productDetails = details as ProductDetails?
 
             if (details == null) {
                 _uiState.value = _uiState.value.copy(

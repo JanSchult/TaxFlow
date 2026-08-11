@@ -2,7 +2,7 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.shared2.data.TaxDeadlineRepository
+import com.example.shared2.data.repository.TaxDeadlineRepository
 import com.example.shared2.domain.model.TaxDeadline
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

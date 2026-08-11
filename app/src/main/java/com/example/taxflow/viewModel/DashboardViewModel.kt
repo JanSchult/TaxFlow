@@ -2,8 +2,8 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.shared2.data.SettingsRepository
-import com.example.shared2.data.TransactionRepository
+import com.example.shared2.data.repository.SettingsRepository
+import com.example.shared2.data.repository.TransactionRepository
 import com.example.shared2.domain.model.UserSettings
 import com.example.shared2.usecase.CalculateTaxReserveUseCase
 import com.example.taxflow.viewModel.uiState.DashboardUiState

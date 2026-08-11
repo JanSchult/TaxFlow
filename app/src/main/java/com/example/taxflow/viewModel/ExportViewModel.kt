@@ -2,8 +2,8 @@ package com.example.taxflow.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.shared2.data.CategoryRepository
-import com.example.shared2.data.TransactionRepository
+import com.example.shared2.data.repository.CategoryRepository
+import com.example.shared2.data.repository.TransactionRepository
 import com.example.taxflow.data.PdfReportGenerator
 import com.example.taxflow.domain.usecase.ExportMode
 import com.example.taxflow.domain.usecase.ExportPeriodType

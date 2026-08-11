@@ -1,5 +1,5 @@
 package com.example.taxflow.data.notification
-import com.example.shared2.data.TaxDeadlineRepository
+import com.example.shared2.data.repository.TaxDeadlineRepository
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
