@@ -30,13 +30,11 @@ class AddTransactionViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
-        // Falls ein Beleg-Scan gerade ein Ergebnis abgelegt hat, direkt übernehmen.
         receiptDraftHolder.consume()?.let { draft ->
             _uiState.value = _uiState.value.copy(
                 amountInput = draft.amount?.toString().orEmpty(),
                 note = draft.vendorGuess.orEmpty(),
                 date = (draft.date ?: _uiState.value.date) as LocalDate
-                // Kategorie bewusst nicht automatisch setzen - siehe OCR-Feature-Doku.
             )
         }
     }
@@ -45,6 +43,7 @@ class AddTransactionViewModel(
         _uiState.value = _uiState.value.copy(
             type = type,
             selectedCategoryId = null,
+            selectedCategoryDeductible = 100,
             useMileageCalculator = false
         )
     }
@@ -57,14 +56,11 @@ class AddTransactionViewModel(
         _uiState.value = _uiState.value.copy(note = value)
     }
 
-    fun onCategorySelected(categoryId: Long) {
-        val stillSupportsCalculator = categories.value
-            .find { it.id == categoryId }
-            ?.supportsMileageCalculator == true
-
+    fun onCategorySelected(category: Category) {
+        val stillSupportsCalculator = category.supportsMileageCalculator
         _uiState.value = _uiState.value.copy(
-            selectedCategoryId = categoryId,
-            // Rechner ausblenden, wenn eine Kategorie ohne Kilometerpauschale gewählt wird.
+            selectedCategoryId = category.id,
+            selectedCategoryDeductible = category.taxDeductiblePercentage,
             useMileageCalculator = _uiState.value.useMileageCalculator && stillSupportsCalculator
         )
     }
@@ -72,8 +68,6 @@ class AddTransactionViewModel(
     fun onDateChanged(date: LocalDate) {
         _uiState.value = _uiState.value.copy(date = date)
     }
-
-    // --- Fahrtkostenrechner -------------------------------------------------
 
     fun onToggleMileageCalculator(enabled: Boolean) {
         _uiState.value = _uiState.value.copy(useMileageCalculator = enabled)
@@ -91,15 +85,12 @@ class AddTransactionViewModel(
     }
 
     private fun recalculateMileageAmount() {
-        val state = _uiState.value
-        val km = state.kilometersInput.replace(",", ".").toDoubleOrNull() ?: return
-        val amount = km * state.vehicleType.ratePerKm
+        val km = _uiState.value.kilometersInput.replace(",", ".").toDoubleOrNull() ?: return
+        val amount = km * _uiState.value.vehicleType.ratePerKm
         _uiState.value = _uiState.value.copy(
             amountInput = "%.2f".format(amount).replace(".", ",")
         )
     }
-
-    // -------------------------------------------------------------------------
 
     fun save() {
         val state = _uiState.value
@@ -121,7 +112,8 @@ class AddTransactionViewModel(
                     type = state.type,
                     categoryId = state.selectedCategoryId,
                     date = state.date,
-                    note = state.note
+                    note = state.note,
+                    taxDeductiblePercentage = state.selectedCategoryDeductible // ← aus Kategorie
                 )
             )
             _uiState.value = AddTransactionUiState(isSaved = true)

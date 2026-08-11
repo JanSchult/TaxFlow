@@ -8,7 +8,7 @@ expect class BillingManager {
     suspend fun queryPremiumProductDetails(): KmpProductDetails?
     fun launchPurchaseFlow(
         activity: PlatformActivity,
-        details1: com.android.billingclient.api.ProductDetails,
+        details1: Any,
         offerToken: String
     )
     suspend fun queryActiveSubscriptionPurchases(): List<KmpPurchase>

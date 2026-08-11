@@ -106,7 +106,7 @@ actual class BillingManager(context: Context) {
 
     actual fun launchPurchaseFlow(
         activity: PlatformActivity,
-        details1: ProductDetails,
+        details1: Any,
         offerToken: String
     ) {
         val details = cachedProductDetails ?: run {

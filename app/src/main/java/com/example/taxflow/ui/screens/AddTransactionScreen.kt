@@ -157,7 +157,10 @@ fun AddTransactionScreen(
         CategoryPickerSheet(
             categories = filteredCategories,
             selectedCategoryId = state.selectedCategoryId,
-            onCategorySelected = viewModel::onCategorySelected,
+            onCategorySelected = { categoryId ->
+                val category = filteredCategories.find { it.id == categoryId }
+                category?.let { viewModel.onCategorySelected(it) }
+            },
             onDismiss = { showCategoryPicker = false }
         )
     }

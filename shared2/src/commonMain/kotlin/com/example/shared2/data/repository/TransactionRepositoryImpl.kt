@@ -12,10 +12,10 @@ class TransactionRepositoryImpl(
 ) : TransactionRepository {
 
     override fun getAll(): Flow<List<Transaction>> =
-        dao.getAll().map { list -> list.map { it.toDomain() } }
+        dao.getAll().map { it.map { e -> e.toDomain() } }
 
-    override fun getBetween(from:LocalDate, to: LocalDate): Flow<List<Transaction>> =
-        dao.getBetween(from, to).map { list -> list.map { it.toDomain() } }
+    override fun getBetween(from: LocalDate, to: LocalDate): Flow<List<Transaction>> =
+        dao.getBetween(from, to).map { it.map { e -> e.toDomain() } }
 
     override suspend fun add(transaction: Transaction): Long =
         dao.insert(transaction.toEntity())
@@ -27,13 +27,15 @@ class TransactionRepositoryImpl(
         dao.delete(transaction.toEntity())
 }
 
+// taxDeductiblePercentage wird 1:1 vom Entity ins Domain-Modell übernommen
 private fun TransactionEntity.toDomain() = Transaction(
     id = id,
     amount = amount,
     type = type,
     categoryId = categoryId ?: 0L,
     date = date,
-    note = note
+    note = note,
+    taxDeductiblePercentage = taxDeductiblePercentage
 )
 
 private fun Transaction.toEntity() = TransactionEntity(
@@ -42,5 +44,6 @@ private fun Transaction.toEntity() = TransactionEntity(
     type = type,
     categoryId = categoryId,
     date = date,
-    note = note
+    note = note,
+    taxDeductiblePercentage = taxDeductiblePercentage
 )

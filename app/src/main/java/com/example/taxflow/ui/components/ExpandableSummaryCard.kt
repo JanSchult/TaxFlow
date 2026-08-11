@@ -21,7 +21,7 @@ fun ExpandableSummaryCard(
     color: Color,
     isExpanded: Boolean,
     onExpandToggle: () -> Unit,
-    items: List<Transaction> // Exakt auf dein Model gematcht
+    items: List<Transaction>
 ) {
     Card(
         modifier = Modifier
@@ -70,14 +70,20 @@ fun ExpandableSummaryCard(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Zeigt die Notiz an, oder "Buchung #ID" falls leer
                             val displayName = item.note.ifBlank { "Buchung #${item.id}" }
 
-                            Text(
-                                text = displayName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = displayName,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                // Zeigt den Prozentwert JETZT IMMER an
+                                Text(
+                                    text = "${item.taxDeductiblePercentage}% absetzbar",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             Text(
                                 text = formatCurrency(item.amount, currency),
                                 style = MaterialTheme.typography.bodyMedium,

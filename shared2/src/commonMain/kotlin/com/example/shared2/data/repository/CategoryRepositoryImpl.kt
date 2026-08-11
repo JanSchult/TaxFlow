@@ -23,6 +23,7 @@ private fun CategoryEntity.toDomain() = Category(
     type = type,
     colorHex = colorHex,
     isDefault = isDefault,
+    taxDeductiblePercentage = taxDeductiblePercentage,
     supportsMileageCalculator = supportsMileageCalculator
 )
 
@@ -32,5 +33,6 @@ private fun Category.toEntity() = CategoryEntity(
     type = type,
     colorHex = colorHex,
     isDefault = isDefault,
+    taxDeductiblePercentage = taxDeductiblePercentage,
     supportsMileageCalculator = supportsMileageCalculator
 )

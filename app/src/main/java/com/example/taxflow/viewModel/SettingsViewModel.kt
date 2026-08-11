@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shared2.data.repository.SettingsRepository
 import com.example.shared2.domain.model.UserSettings
+import com.example.shared2.domain.model.VatMode
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -21,6 +22,7 @@ class SettingsViewModel(
     fun updateSavingsGoal(value: Double) = updateAndSave { it.copy(monthlySavingsGoal = value) }
     fun updateBuffer(value: Double) = updateAndSave { it.copy(bufferPercent = value) }
 
+    fun updateVatMode(mode: VatMode) = updateAndSave { it.copy(vatMode = mode)}
     private fun updateAndSave(transform: (UserSettings) -> UserSettings) {
         viewModelScope.launch {
             repository.update(transform(settings.value))

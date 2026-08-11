@@ -62,6 +62,7 @@ class BackupManager(
                     put("type", c.type.name)
                     put("colorHex", c.colorHex)
                     put("isDefault", c.isDefault)
+                    put("taxDeductiblePercentage", c.taxDeductiblePercentage)
                     put("supportsMileageCalculator", c.supportsMileageCalculator)
                 })
             }
@@ -117,6 +118,7 @@ class BackupManager(
                         type = TransactionType.valueOf(c.getString("type")),
                         colorHex = c.getString("colorHex"),
                         isDefault = c.optBoolean("isDefault", false),
+                        taxDeductiblePercentage = c.optInt("taxDeductiblePercentage", 100) ,
                         supportsMileageCalculator = c.optBoolean("supportsMileageCalculator", false)
                     )
                 )

@@ -20,7 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taxflow.ui.components.PremiumGate
 import com.example.taxflow.ui.components.SummaryRow
-import com.example.taxflow.ui.components.TaxReserveCard
+import com.example.taxflow.ui.components.TaxBreakdownCard
+import com.example.taxflow.ui.components.VatCard
 import com.example.taxflow.viewModel.DashboardViewModel
 import com.example.taxflow.viewModel.PremiumStatusViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -62,7 +63,22 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
-            item { TaxReserveCard(state.result, state.currencyCode) }
+            item {
+                VatCard(
+                    vatResult = state.result.vatResult,
+                    currencyCode = state.currencyCode
+                )
+            }
+
+            // Aufgeschlüsselte Steuerübersicht
+            item {
+                TaxBreakdownCard(
+                    result = state.result,
+                    currencyCode = state.currencyCode,
+                    taxRatePercent = state.taxRatePercent,
+                    bufferPercent = state.bufferPercent
+                )
+            }
 
             // --- SECTION: EINNAHMEN (EXPANDABLE) ---
             item {

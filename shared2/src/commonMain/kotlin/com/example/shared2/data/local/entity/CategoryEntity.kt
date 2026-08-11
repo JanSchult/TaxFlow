@@ -11,5 +11,6 @@ data class CategoryEntity(
     val type: TransactionType,
     val colorHex: String,
     val isDefault: Boolean = false,
-    val supportsMileageCalculator: Boolean = false
+    val supportsMileageCalculator: Boolean = false,
+    val taxDeductiblePercentage: Int = 100   // 0–100: steuerlich abziehbarer Anteil
 )

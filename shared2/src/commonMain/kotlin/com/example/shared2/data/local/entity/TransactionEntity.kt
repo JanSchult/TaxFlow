@@ -4,15 +4,20 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.shared2.domain.model.Category
 import com.example.shared2.domain.model.TransactionType
 import kotlinx.datetime.LocalDate
 
-@Entity(tableName = "transactions",
+@Entity(
+    tableName = "transactions",
     foreignKeys = [
-ForeignKey(
-    entity = CategoryEntity::class,
-    parentColumns = ["id"], childColumns = ["categoryId"],onDelete = ForeignKey.SET_NULL)
-                  ],
+        ForeignKey(
+            entity = CategoryEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["categoryId"],
+            onDelete = ForeignKey.SET_NULL
+        )
+    ],
     indices = [Index("categoryId"), Index("date")]
 )
 data class TransactionEntity(
@@ -21,5 +26,6 @@ data class TransactionEntity(
     val type: TransactionType,
     val categoryId: Long?,
     val date: LocalDate,
-    val note: String
+    val note: String,
+    val taxDeductiblePercentage: Int = 100   // ← NEU: aus Kategorie beim Erfassen übernommen
 )

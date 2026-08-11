@@ -8,5 +8,6 @@ data class Transaction(
     val type: TransactionType,
     val categoryId: Long,
     val date: LocalDate,
-    val note: String = ""
+    val note: String = "",
+    val taxDeductiblePercentage: Int = 100   // ← NEU: 0–100, aus Kategorie übernommen
 )

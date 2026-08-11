@@ -14,7 +14,7 @@ import com.example.shared2.data.local.entity.TransactionEntity
 
 @Database(
     entities = [TransactionEntity::class, CategoryEntity::class, TaxDeadlineEntity::class],
-    version = 1
+    version = 2
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)

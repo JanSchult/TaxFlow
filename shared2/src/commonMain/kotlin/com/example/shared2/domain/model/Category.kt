@@ -6,5 +6,6 @@ data class Category(
     val type: TransactionType,
     val colorHex: String = "#4C6EF5",
     val isDefault: Boolean = false,
+    val taxDeductiblePercentage: Int,
     val supportsMileageCalculator: Boolean = false
 )

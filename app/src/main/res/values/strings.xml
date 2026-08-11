@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TaxFlow</string>
+    <string name="title_composeapp">composeapp</string>
 </resources>

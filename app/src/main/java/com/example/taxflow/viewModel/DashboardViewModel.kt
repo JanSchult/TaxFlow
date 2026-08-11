@@ -32,6 +32,8 @@ class DashboardViewModel(
             currentMonthLabel = monthLabel(),
             result = calculateTaxReserveUseCase(transactions, settings),
             currencyCode = settings.currencyCode,
+            taxRatePercent = settings.taxRatePercent,
+            bufferPercent = settings.bufferPercent,
             isLoading = false
         )
     }.stateIn(
