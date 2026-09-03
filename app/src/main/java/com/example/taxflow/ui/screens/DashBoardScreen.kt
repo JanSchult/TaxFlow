@@ -2,11 +2,9 @@ package com.example.taxflow.ui.screens
 
 import ExpandableSummaryCard
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,10 +13,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.taxflow.ui.components.PremiumGate
+import com.example.taxflow.ui.components.LockedOverlay
 import com.example.taxflow.ui.components.SummaryRow
 import com.example.taxflow.ui.components.TaxBreakdownCard
 import com.example.taxflow.ui.components.VatCard
@@ -37,20 +34,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
     var isIncomeExpanded by remember { mutableStateOf(false) }
     var isExpensesExpanded by remember { mutableStateOf(false) }
 
-    PremiumGate(
-        isPremium = isPremium,
-        title = "Steuerrücklage & Dashboard",
-        description = "Sieh auf einen Blick, wie viel du für Steuern zurücklegen solltest.",
-        onUpgradeClick = onNavigateToPaywall
-    ) {
-        if (state.isLoading) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) { CircularProgressIndicator() }
-            return@PremiumGate
-        }
+
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -64,20 +48,32 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                 )
             }
             item {
-                VatCard(
-                    vatResult = state.result.vatResult,
-                    currencyCode = state.currencyCode
-                )
+                LockedOverlay(
+                    isLocked = !isPremium,
+                    label = "Umsatzsteuer-Übersicht freischalten",
+                    onUnlockClick = onNavigateToPaywall,
+                ) {
+                    VatCard(
+                        vatResult = state.result.vatResult,
+                        currencyCode = state.currencyCode
+                    )
+                }
             }
 
             // Aufgeschlüsselte Steuerübersicht
             item {
-                TaxBreakdownCard(
-                    result = state.result,
-                    currencyCode = state.currencyCode,
-                    taxRatePercent = state.taxRatePercent,
-                    bufferPercent = state.bufferPercent
-                )
+                LockedOverlay(
+                    isLocked = !isPremium,
+                    label = "Steuerrücklage freischalten",
+                    onUnlockClick = onNavigateToPaywall,
+                ) {
+                    TaxBreakdownCard(
+                        result = state.result,
+                        currencyCode = state.currencyCode,
+                        taxRatePercent = state.taxRatePercent,
+                        bufferPercent = state.bufferPercent
+                    )
+                }
             }
 
             // --- SECTION: EINNAHMEN (EXPANDABLE) ---
@@ -119,13 +115,18 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
             }
             // Unverändertes Feld (Bleibt statisch)
             item {
-                SummaryRow(
-                    label = "Frei verfügbar (nach Rücklage & Sparziel)",
-                    amount = state.result.availableAfterReserve,
-                    currency = state.currencyCode,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                LockedOverlay(
+                    isLocked = !isPremium,
+                    label = "Frei verfügbar(nach Rücklagen & Sparziel) freischalten",
+                    onUnlockClick = onNavigateToPaywall
+                ) {
+                    SummaryRow(
+                        label = "Frei verfügbar (nach Rücklage & Sparziel)",
+                        amount = state.result.availableAfterReserve,
+                        currency = state.currencyCode,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
-}
