@@ -2,9 +2,11 @@ package com.example.taxflow.ui.screens
 
 import ExpandableSummaryCard
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taxflow.ui.components.LockedOverlay
@@ -24,9 +27,11 @@ import com.example.taxflow.viewModel.PremiumStatusViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
-                    onNavigateToPaywall: () -> Unit,
-                    premiumViewModel: PremiumStatusViewModel = koinViewModel(),) {
+fun DashboardScreen(
+    viewModel: DashboardViewModel = koinViewModel(),
+    onNavigateToPaywall: () -> Unit,
+    premiumViewModel: PremiumStatusViewModel = koinViewModel(),
+) {
     val state by viewModel.uiState.collectAsState()
     val isPremium by premiumViewModel.isPremium.collectAsState()
 
@@ -34,8 +39,14 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
     var isIncomeExpanded by remember { mutableStateOf(false) }
     var isExpensesExpanded by remember { mutableStateOf(false) }
 
-
-
+    if (state.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -47,6 +58,8 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
+
+            // --- SECTION: UMSATZSTEUER ---
             item {
                 LockedOverlay(
                     isLocked = !isPremium,
@@ -60,7 +73,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                 }
             }
 
-            // Aufgeschlüsselte Steuerübersicht
+            // --- SECTION: STEUERRÜCKLAGE & GEWINN ---
             item {
                 LockedOverlay(
                     isLocked = !isPremium,
@@ -85,24 +98,24 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                     color = MaterialTheme.colorScheme.secondary,
                     isExpanded = isIncomeExpanded,
                     onExpandToggle = { isIncomeExpanded = !isIncomeExpanded },
-                    // Hier die Liste der erfassten Einnahmen übergeben:
-                    items = state.result.incomeItems // Name ggf. an dein Model anpassen
+                    items = state.result.incomeItems
                 )
             }
 
             // --- SECTION: AUSGABEN (EXPANDABLE) ---
             item {
                 ExpandableSummaryCard(
-                    label = "Ausgaben",
+                    label = "Ausgaben (Brutto)",
                     totalAmount = state.result.totalExpenses,
                     currency = state.currencyCode,
                     color = MaterialTheme.colorScheme.error,
                     isExpanded = isExpensesExpanded,
                     onExpandToggle = { isExpensesExpanded = !isExpensesExpanded },
-                    // Hier die Liste der erfassten Ausgaben übergeben:
-                    items = state.result.expenseItems // Name ggf. an dein Model anpassen
+                    items = state.result.expenseItems
                 )
             }
+
+            // --- SECTION: SPARZIEL ---
             if (state.result.savingsGoalAmount > 0) {
                 item {
                     SummaryRow(
@@ -113,11 +126,12 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
                     )
                 }
             }
-            // Unverändertes Feld (Bleibt statisch)
+
+            // --- SECTION: FREI VERFÜGBAR ---
             item {
                 LockedOverlay(
                     isLocked = !isPremium,
-                    label = "Frei verfügbar(nach Rücklagen & Sparziel) freischalten",
+                    label = "Frei verfügbar (nach Rücklage & Sparziel) freischalten",
                     onUnlockClick = onNavigateToPaywall
                 ) {
                     SummaryRow(
@@ -130,3 +144,4 @@ fun DashboardScreen(viewModel: DashboardViewModel = koinViewModel(),
             }
         }
     }
+}

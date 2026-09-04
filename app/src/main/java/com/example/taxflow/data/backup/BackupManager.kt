@@ -11,6 +11,7 @@ import com.example.shared2.data.local.database.AppDatabase
 import com.example.shared2.data.local.entity.CategoryEntity
 import com.example.shared2.data.local.entity.TaxDeadlineEntity
 import com.example.shared2.data.local.entity.TransactionEntity
+import com.example.shared2.domain.model.VatMode
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDate
 import org.json.JSONArray
@@ -19,7 +20,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-private const val SCHEMA_VERSION = 1
 
 /**
  * Exportiert/importiert den kompletten lokalen Datenbestand (Buchungen, Kategorien,
@@ -30,6 +30,8 @@ private const val SCHEMA_VERSION = 1
  * Wichtig: restoreFromJson() ERSETZT alle vorhandenen Daten vollständig.
  * Die Bestätigung dafür muss auf UI-Ebene eingeholt werden, bevor das aufgerufen wird.
  */
+private const val SCHEMA_VERSION = 2
+
 class BackupManager(
     private val database: AppDatabase,
     private val transactionDao: TransactionDao,
@@ -52,6 +54,7 @@ class BackupManager(
             put("currencyCode", settings.currencyCode)
             put("monthlySavingsGoal", settings.monthlySavingsGoal)
             put("bufferPercent", settings.bufferPercent)
+            put("vatMode", settings.vatMode.name)
         })
 
         root.put("categories", JSONArray().apply {
@@ -68,11 +71,16 @@ class BackupManager(
             }
         })
 
+        // Transaktionen mit den neuen EÜR-Feldern exportieren
         root.put("transactions", JSONArray().apply {
             transactions.forEach { t ->
                 put(JSONObject().apply {
                     put("id", t.id)
-                    put("amount", t.amount)
+                    put("grossAmount", t.grossAmount)
+                    put("netAmount", t.netAmount)
+                    put("vatAmount", t.vatAmount)
+                    put("vatMode", t.vatMode.name)
+                    put("taxDeductiblePercentage", t.taxDeductiblePercentage)
                     put("type", t.type.name)
                     put("categoryId", t.categoryId ?: JSONObject.NULL)
                     put("date", t.date.toString())
@@ -118,7 +126,7 @@ class BackupManager(
                         type = TransactionType.valueOf(c.getString("type")),
                         colorHex = c.getString("colorHex"),
                         isDefault = c.optBoolean("isDefault", false),
-                        taxDeductiblePercentage = c.optInt("taxDeductiblePercentage", 100) ,
+                        taxDeductiblePercentage = c.optInt("taxDeductiblePercentage", 100),
                         supportsMileageCalculator = c.optBoolean("supportsMileageCalculator", false)
                     )
                 )
@@ -126,14 +134,27 @@ class BackupManager(
 
             for (i in 0 until transactionsJson.length()) {
                 val t = transactionsJson.getJSONObject(i)
+
+                // Fallback für alte Backups, die noch 'amount' nutzen
+                val gross = if (t.has("grossAmount")) t.getDouble("grossAmount") else t.optDouble("amount", 0.0)
+                val net = t.optDouble("netAmount", gross)
+                val vat = t.optDouble("vatAmount", 0.0)
+                val vatModeStr = t.optString("vatMode", VatMode.NONE.name)
+                val vatMode = runCatching { VatMode.valueOf(vatModeStr) }.getOrDefault(VatMode.NONE)
+                val deductible = t.optInt("taxDeductiblePercentage", 100)
+
                 transactionDao.insert(
                     TransactionEntity(
                         id = t.getLong("id"),
-                        amount = t.getDouble("amount"),
+                        grossAmount = gross,
+                        netAmount = net,
+                        vatAmount = vat,
+                        vatMode = vatMode,
+                        taxDeductiblePercentage = deductible,
                         type = TransactionType.valueOf(t.getString("type")),
                         categoryId = if (t.isNull("categoryId")) null else t.getLong("categoryId"),
                         date = LocalDate.parse(t.getString("date")),
-                        note = t.optString("note", "")
+                        note = if (t.isNull("note")) "" else t.getString("note")
                     )
                 )
             }
@@ -145,20 +166,23 @@ class BackupManager(
                         id = d.getLong("id"),
                         title = d.getString("title"),
                         dueDate = LocalDate.parse(d.getString("dueDate")),
-                        note = d.optString("note", ""),
+                        note = if (d.isNull("note")) "" else d.getString("note"),
                         isPaid = d.optBoolean("isPaid", false)
                     )
                 )
             }
         }
 
-        // Settings liegen in DataStore, nicht in Room - bewusst außerhalb der DB-Transaktion.
+        val savedVatModeStr = settingsJson.optString("vatMode", VatMode.NONE.name)
+        val savedVatMode = runCatching { VatMode.valueOf(savedVatModeStr) }.getOrDefault(VatMode.NONE)
+
         settingsRepository.update(
             UserSettings(
-                taxRatePercent = settingsJson.optDouble("taxRatePercent", 30.0),
-                currencyCode = settingsJson.optString("currencyCode", "EUR"),
-                monthlySavingsGoal = settingsJson.optDouble("monthlySavingsGoal", 0.0),
-                bufferPercent = settingsJson.optDouble("bufferPercent", 10.0)
+                taxRatePercent = if (settingsJson.has("taxRatePercent")) settingsJson.getDouble("taxRatePercent") else 30.0,
+                currencyCode = if (settingsJson.isNull("currencyCode")) "EUR" else settingsJson.optString("currencyCode", "EUR"),
+                monthlySavingsGoal = if (settingsJson.has("monthlySavingsGoal")) settingsJson.getDouble("monthlySavingsGoal") else 0.0,
+                bufferPercent = if (settingsJson.has("bufferPercent")) settingsJson.getDouble("bufferPercent") else 10.0,
+                vatMode = savedVatMode
             )
         )
     }

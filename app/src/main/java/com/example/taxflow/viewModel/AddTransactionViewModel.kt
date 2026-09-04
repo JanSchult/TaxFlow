@@ -3,25 +3,31 @@ package com.example.taxflow.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shared2.data.repository.CategoryRepository
+import com.example.shared2.data.repository.SettingsRepository
 import com.example.shared2.data.repository.TransactionRepository
 import com.example.shared2.domain.model.Category
 import com.example.shared2.domain.model.Transaction
 import com.example.shared2.domain.model.TransactionType
+import com.example.shared2.domain.model.VatMode
+import com.example.shared2.usecase.BuildEuerReportUseCase
 import com.example.taxflow.data.orc.ReceiptDraftHolder
 import com.example.taxflow.domain.usecase.VehicleType
 import com.example.taxflow.viewModel.uiState.AddTransactionUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
 class AddTransactionViewModel(
     private val transactionRepository: TransactionRepository,
-    categoryRepository: CategoryRepository,
+    private val categoryRepository: CategoryRepository,
+    private val settingsRepository: SettingsRepository,
     private val receiptDraftHolder: ReceiptDraftHolder
-) : ViewModel() {
+ ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddTransactionUiState())
     val uiState: StateFlow<AddTransactionUiState> = _uiState
@@ -92,28 +98,63 @@ class AddTransactionViewModel(
         )
     }
 
+    fun onVatModeChanged(newMode: VatMode) {
+        _uiState.update { currentState ->
+            val gross = currentState.amountInput.replace(",", ".").toDoubleOrNull() ?: 0.0
+            val net = calculateNet(gross, newMode)
+            val vat = gross - net
+
+            currentState.copy(
+                vatMode = newMode,
+                grossAmount = gross,
+                netAmount = net,
+                vatAmount = vat
+            )
+        }
+    }
+
+    private fun calculateNet(gross: Double, vatMode: VatMode): Double {
+        val rate = vatMode.ratePercent ?: return gross
+        return gross / (1.0 + (rate / 100.0))
+    }
+
     fun save() {
         val state = _uiState.value
-        val amount = state.amountInput.replace(",", ".").toDoubleOrNull()
+        val grossAmount = state.amountInput.replace(",", ".").toDoubleOrNull()
 
-        if (amount == null || amount <= 0.0) {
+        if (grossAmount == null || grossAmount <= 0.0) {
             _uiState.value = state.copy(errorMessage = "Bitte einen gültigen Betrag eingeben.")
             return
         }
-        if (state.selectedCategoryId == null) {
+        val categoryId = state.selectedCategoryId
+        if (categoryId == null) {
             _uiState.value = state.copy(errorMessage = "Bitte eine Kategorie auswählen.")
             return
         }
 
         viewModelScope.launch {
+            val currentSettings = settingsRepository.settings.first()
+            val vatMode = currentSettings.vatMode
+            val vatRate = vatMode.ratePercent?.div(100.0) ?: 0.0
+            val netAmount = if (vatRate > 0.0) grossAmount / (1.0 + vatRate) else grossAmount
+            val vatAmount = grossAmount - netAmount
+
+            // categoryName für EÜR-Gruppierung mitgeben
+            val categoryName = categories.value
+                .find { it.id == categoryId }?.name ?: ""
+
             transactionRepository.add(
                 Transaction(
-                    amount = amount,
+                    grossAmount = grossAmount,
+                    netAmount = netAmount,
+                    vatAmount = vatAmount,
+                    vatMode = vatMode,
                     type = state.type,
-                    categoryId = state.selectedCategoryId,
+                    categoryId = categoryId,
+                    categoryName = categoryName,   // ← neu
                     date = state.date,
                     note = state.note,
-                    taxDeductiblePercentage = state.selectedCategoryDeductible // ← aus Kategorie
+                    taxDeductiblePercentage = state.selectedCategoryDeductible
                 )
             )
             _uiState.value = AddTransactionUiState(isSaved = true)

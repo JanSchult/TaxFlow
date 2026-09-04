@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.shared2.domain.model.Category
 import com.example.shared2.domain.model.TransactionType
+import com.example.shared2.domain.model.VatMode
 import kotlinx.datetime.LocalDate
 
 @Entity(
@@ -22,10 +23,13 @@ import kotlinx.datetime.LocalDate
 )
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
-    val amount: Double,
+    val grossAmount: Double,
+    val netAmount: Double,
+    val vatAmount: Double,
+    val vatMode: VatMode,
     val type: TransactionType,
     val categoryId: Long?,
     val date: LocalDate,
     val note: String,
-    val taxDeductiblePercentage: Int = 100   // ← NEU: aus Kategorie beim Erfassen übernommen
+    val taxDeductiblePercentage: Int
 )

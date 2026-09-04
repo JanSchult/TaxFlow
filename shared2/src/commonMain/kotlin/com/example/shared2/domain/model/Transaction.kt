@@ -4,10 +4,17 @@ import kotlinx.datetime.LocalDate
 
 data class Transaction(
     val id: Long = 0L,
-    val amount: Double,
+    val grossAmount: Double,
+    val netAmount: Double,
+    val vatAmount: Double,
+    val vatMode: VatMode,
     val type: TransactionType,
     val categoryId: Long,
+    val categoryName: String = "",
     val date: LocalDate,
     val note: String = "",
-    val taxDeductiblePercentage: Int = 100   // ← NEU: 0–100, aus Kategorie übernommen
-)
+    val taxDeductiblePercentage: Int = 100
+) {
+    /** Bequemlichkeits-Alias, wo bisher amount verwendet wurde */
+    val amount: Double get() = grossAmount
+}

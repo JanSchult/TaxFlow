@@ -28,21 +28,28 @@ class TransactionRepositoryImpl(
 }
 
 // taxDeductiblePercentage wird 1:1 vom Entity ins Domain-Modell übernommen
-private fun TransactionEntity.toDomain() = Transaction(
+fun TransactionEntity.toDomain(categoryName: String = "") = Transaction(
     id = id,
-    amount = amount,
+    grossAmount = grossAmount,
+    netAmount = netAmount,
+    vatAmount = vatAmount,
+    vatMode = vatMode,
     type = type,
     categoryId = categoryId ?: 0L,
+    categoryName = categoryName,
     date = date,
     note = note,
     taxDeductiblePercentage = taxDeductiblePercentage
 )
 
-private fun Transaction.toEntity() = TransactionEntity(
+fun Transaction.toEntity() = TransactionEntity(
     id = id,
-    amount = amount,
+    grossAmount = grossAmount,
+    netAmount = netAmount,
+    vatAmount = vatAmount,
+    vatMode = vatMode,
     type = type,
-    categoryId = categoryId,
+    categoryId = if (categoryId == 0L) null else categoryId,
     date = date,
     note = note,
     taxDeductiblePercentage = taxDeductiblePercentage

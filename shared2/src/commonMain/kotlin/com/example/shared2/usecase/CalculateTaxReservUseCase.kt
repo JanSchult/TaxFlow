@@ -8,75 +8,57 @@ import com.example.shared2.domain.model.VatMode
 import com.example.shared2.domain.model.VatResult
 
 
-class CalculateTaxReserveUseCase {
+class CalculateTaxReserveUseCase(
+    private val buildEuerReportUseCase: BuildEuerReportUseCase = BuildEuerReportUseCase()
+) {
 
     operator fun invoke(
         transactions: List<Transaction>,
-        settings: UserSettings
+        settings: UserSettings,
+        periodLabel: String = ""
     ): TaxReserveResult {
 
-        // 1. Nach Typ trennen
-        val incomeItems = transactions.filter { it.type == TransactionType.INCOME }
-        val expenseItems = transactions.filter { it.type == TransactionType.EXPENSE }
+        // 1. EÜR-Bericht generieren (übernimmt positionsweise Netto/Brutto/USt & Absetzbarkeit)
+        val euerReport = buildEuerReportUseCase(transactions, settings, periodLabel)
 
-        // 2. Ausgaben-Anteile berechnen
-        //    taxDeductiblePercentage liegt direkt in Transaction (aus Kategorie übernommen)
-        val totalExpenses = expenseItems.sumOf { it.amount }
-        val taxDeductibleExpenses = expenseItems.sumOf { tx ->
-            tx.amount * (tx.taxDeductiblePercentage / 100.0)
-        }
-        val nonDeductibleExpenses = totalExpenses - taxDeductibleExpenses
-
-        // 3. Bruttoeinnahmen
-        val grossIncome = incomeItems.sumOf { it.amount }
-
-        // 4. USt-Berechnung (nur bei Regelbesteuerung)
-        val vatResult: VatResult?
-        val netIncome: Double
-
-        if (settings.vatMode != VatMode.NONE && settings.vatMode.ratePercent != null) {
-            val rate = settings.vatMode.ratePercent / 100.0
-            netIncome = grossIncome / (1.0 + rate)
-            val vatAmount = grossIncome - netIncome
-            vatResult = VatResult(
+        // 2. USt-Ergebnis aggregieren
+        val vatResult = if (settings.vatMode != VatMode.NONE) {
+            VatResult(
                 vatMode = settings.vatMode,
-                grossIncome = grossIncome,
-                netIncome = netIncome,
-                vatAmount = vatAmount,
-                vatRatePercent = settings.vatMode.ratePercent
+                grossIncome = euerReport.incomeGross,
+                netIncome = euerReport.incomeNet,
+                vatAmount = euerReport.incomeVat,
+                vatRatePercent = settings.vatMode.ratePercent ?: 0.0
             )
         } else {
-            netIncome = grossIncome
-            vatResult = null
+            null
         }
 
-        // 5. Gewinne berechnen
-        //    taxableProfit: für das Finanzamt (nur abziehbare Ausgaben)
-        //    realProfit:    Cashflow (alle tatsächlichen Ausgaben)
-        val taxableProfit = (netIncome - taxDeductibleExpenses).coerceAtLeast(0.0)
-        val realProfit = (netIncome - totalExpenses).coerceAtLeast(0.0)
+        // 3. Gewinne aus dem EÜR-Bericht übernehmen
+        val taxableProfit = euerReport.taxableProfit
+        val realProfit = euerReport.realProfit
 
-        // 6. Einkommensteuer-Rücklage auf steuerlichem Gewinn
+        // 4. Einkommensteuer-Rücklage berechnen (auf steuerlichem Gewinn)
         val effectiveRate = (settings.taxRatePercent + settings.bufferPercent) / 100.0
         val taxReserve = taxableProfit * effectiveRate
         val savingsGoal = settings.monthlySavingsGoal
 
-        // 7. Frei verfügbar: vom echten Cashflow-Gewinn, nach Steuer-Rücklage
+        // 5. Frei verfügbar (Cashflow-Gewinn abzüglich Steuerrücklage und Sparziel)
         val available = (realProfit - taxReserve - savingsGoal).coerceAtLeast(0.0)
 
         return TaxReserveResult(
-            totalIncome = grossIncome,
-            totalExpenses = totalExpenses,
-            taxDeductibleExpenses = taxDeductibleExpenses,
-            nonDeductibleExpenses = nonDeductibleExpenses,
+            totalIncome = euerReport.incomeGross,
+            totalExpenses = euerReport.totalExpenses,
+            taxDeductibleExpenses = euerReport.totalDeductible,
+            nonDeductibleExpenses = euerReport.totalNonDeductible,
             taxableProfit = taxableProfit,
             realProfit = realProfit,
             profit = taxableProfit,
             taxReserveAmount = taxReserve,
             availableAfterReserve = available,
             savingsGoalAmount = savingsGoal,
-            incomeItems = incomeItems,
-            expenseItems = expenseItems,
+            incomeItems = euerReport.incomeItems,
+            expenseItems = euerReport.expenseItems,
             vatResult = vatResult
         )
     }

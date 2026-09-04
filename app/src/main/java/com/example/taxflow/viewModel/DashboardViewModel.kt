@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.shared2.data.repository.SettingsRepository
 import com.example.shared2.data.repository.TransactionRepository
 import com.example.shared2.domain.model.UserSettings
+import com.example.shared2.usecase.BuildEuerReportUseCase
 import com.example.shared2.usecase.CalculateTaxReserveUseCase
 import com.example.taxflow.viewModel.uiState.DashboardUiState
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,16 +22,23 @@ import kotlinx.datetime.todayIn
 class DashboardViewModel(
     private val transactionRepository: TransactionRepository,
     private val settingsRepository: SettingsRepository,
-    private val calculateTaxReserveUseCase: CalculateTaxReserveUseCase
+    private val calculateTaxReserveUseCase: CalculateTaxReserveUseCase,
+    private val buildEuerReportUseCase: BuildEuerReportUseCase // ← Hier hinzugefügt
 ) : ViewModel() {
 
     val uiState: StateFlow<DashboardUiState> = combine(
         transactionRepository.getBetween(startOfMonth(), endOfMonth()),
         settingsRepository.settings
     ) { transactions, settings: UserSettings ->
+        val label = monthLabel()
+
         DashboardUiState(
-            currentMonthLabel = monthLabel(),
-            result = calculateTaxReserveUseCase(transactions, settings),
+            currentMonthLabel = label,
+            result = calculateTaxReserveUseCase(
+                transactions = transactions,
+                settings = settings,
+                periodLabel = label // ← HIER: periodLabel übergeben
+            ),
             currencyCode = settings.currencyCode,
             taxRatePercent = settings.taxRatePercent,
             bufferPercent = settings.bufferPercent,
@@ -46,7 +54,7 @@ class DashboardViewModel(
 
     private fun startOfMonth(): LocalDate {
         val now = today()
-        return LocalDate(now.year, now.monthNumber, 1)
+        return LocalDate(now.year, now.month, 1)
     }
 
     private fun endOfMonth(): LocalDate {

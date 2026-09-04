@@ -15,6 +15,8 @@ import com.example.taxflow.data.notification.NotifiedRemindersDataStore
 import com.example.taxflow.data.orc.ReceiptDraftHolder
 import com.example.taxflow.data.orc.ReceiptTextRecognizer
 import com.example.shared2.settings.SettingsDataStore
+import com.example.shared2.usecase.BuildEuerReportUseCase
+import com.example.shared2.usecase.CalculateTaxReserveUseCase
 import com.example.taxflow.viewModel.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -22,7 +24,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val appModule = module {
-    // Android UI Helfer & Manager
+    // Android UI-Helfer & Manager
     single { SettingsDataStore(get(named("settingsDataStore"))) }
     single { ReceiptTextRecognizer() }
     single { ReceiptDraftHolder() }
@@ -32,21 +34,24 @@ val appModule = module {
     single { OnboardingDataStore(androidContext()) }
     single { AutoBackupDataStore(androidContext()) }
 
+    // Backup Manager (Koin löst AppDatabase, DAOs & SettingsRepository automatisch auf)
     single {
         BackupManager(
-            database = get<AppDatabase>(),
-            transactionDao = get<TransactionDao>(),
-            categoryDao = get<CategoryDao>(),
-            deadlineDao = get<TaxDeadlineDao>(),
-            settingsRepository = get<SettingsRepository>()
+            database = get(),
+            transactionDao = get(),
+            categoryDao = get(),
+            deadlineDao = get(),
+            settingsRepository = get()
         )
     }
-    //Repositorys
-    single<SettingsRepository> { SettingsRepositoryImpl(get()) }
 
+    // Repositories & UseCases
+    single<SettingsRepository> { SettingsRepositoryImpl(get()) }
+    single { CalculateTaxReserveUseCase() } // Registriert für DashboardViewModel
+    single{ BuildEuerReportUseCase() }
     // ViewModels
-    viewModel { DashboardViewModel(get(), get(), get()) }
-    viewModel { AddTransactionViewModel(get(), get(), get()) }
+    viewModel { DashboardViewModel(get(), get(), get(), get()) }
+    viewModel { AddTransactionViewModel(get(), get(), get(), get()) }
     viewModel { OverviewViewModel(get()) }
     viewModel { DeadlinesViewModel(get()) }
     viewModel { SettingsViewModel(get()) }
@@ -56,4 +61,5 @@ val appModule = module {
     viewModel { ExportViewModel(get(), get(), get()) }
     viewModel { OnboardingViewModel(get()) }
     viewModel { BackupViewModel(get(), get()) }
+    viewModel { EuerViewModel(get(), get(), get()) }
 }

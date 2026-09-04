@@ -18,6 +18,7 @@ import com.example.taxflow.ui.screens.AddTransactionScreen
 import com.example.taxflow.ui.screens.BackupScreen
 import com.example.taxflow.ui.screens.DashboardScreen
 import com.example.taxflow.ui.screens.DeadlinesScreen
+import com.example.taxflow.ui.screens.EuerScreen
 import com.example.taxflow.ui.screens.ExportScreen
 import com.example.taxflow.ui.screens.OverviewScreen
 import com.example.taxflow.ui.screens.PaywallScreen
@@ -89,12 +90,16 @@ fun TaxFlowNavGraph() {
                     onPurchaseSuccessful = { navController.popBackStack() }
                 )
             }
+            composable(Screen.Euer.route) {
+                EuerScreen()
+            }
             composable(Screen.Export.route) {
                 ExportScreen()
             }
             composable(Screen.Backup.route) {
                 BackupScreen()
             }
+
         }
     }
 }

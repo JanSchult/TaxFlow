@@ -3,18 +3,23 @@ package com.example.taxflow.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -40,6 +45,7 @@ import com.example.taxflow.viewModel.AddTransactionViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.core.graphics.toColorInt
 import com.example.shared2.domain.model.TransactionType
+import com.example.shared2.domain.model.VatMode
 import com.example.taxflow.ui.components.MileageCalculatorCard
 
 @Composable
@@ -62,11 +68,13 @@ fun AddTransactionScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Neue Buchung", style = MaterialTheme.typography.headlineMedium)
 
+        // Einnahme / Ausgabe Wahl
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             SegmentedButton(
                 selected = state.type == TransactionType.INCOME,
@@ -80,49 +88,109 @@ fun AddTransactionScreen(
             ) { Text("Ausgabe") }
         }
 
+        // Brutto-Betrag Eingabe
         OutlinedTextField(
             value = state.amountInput,
             onValueChange = viewModel::onAmountChanged,
-            label = { Text("Betrag") },
+            label = { Text("Betrag (Brutto)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            // Wenn der Fahrtkostenrechner aktiv ist, kommt der Betrag aus der km-Berechnung -
-            // manuelles Antippen bleibt trotzdem möglich, um das Ergebnis zu übersteuern.
             modifier = Modifier.fillMaxWidth()
         )
-
-        Text("Kategorie", style = MaterialTheme.typography.titleMedium)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showCategoryPicker = true }
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (selectedCategory != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    androidx.compose.foundation.layout.Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .background(parseHexColor(selectedCategory.colorHex), CircleShape)
-                    )
+        // --- NEU: USt-Satz Auswahl ---
+        Text("Umsatzsteuer", style = MaterialTheme.typography.titleMedium)
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            val modes = listOf(VatMode.STANDARD, VatMode.REDUCED, VatMode.NONE)
+            modes.forEachIndexed { index, mode ->
+                SegmentedButton(
+                    selected = state.vatMode == mode,
+                    onClick = { viewModel.onVatModeChanged(mode) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size)
+                ) {
                     Text(
-                        selectedCategory.name,
-                        modifier = Modifier.padding(start = 10.dp),
-                        style = MaterialTheme.typography.bodyLarge
+                        when (mode) {
+                            VatMode.STANDARD -> "19 %"
+                            VatMode.REDUCED -> "7 %"
+                            VatMode.NONE -> "0 % / Keine"
+                        }
                     )
                 }
-            } else {
-                Text(
-                    "Kategorie auswählen",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
-            Icon(Icons.Filled.ExpandMore, contentDescription = "Kategorie wählen")
         }
 
+        // Live USt & Netto Vorschau
+        if (state.grossAmount > 0.0 && state.vatMode != VatMode.NONE) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Netto: ${"%.2f".format(state.netAmount)} €",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "USt (${state.vatMode.ratePercent?.toInt() ?: 0}%): ${"%.2f".format(state.vatAmount)} €",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
+        // Kategorie-Auswahl
+        Text("Kategorie", style = MaterialTheme.typography.titleMedium)
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showCategoryPicker = true }
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (selectedCategory != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .background(parseHexColor(selectedCategory.colorHex), CircleShape)
+                        )
+                        Text(
+                            selectedCategory.name,
+                            modifier = Modifier.padding(start = 10.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                } else {
+                    Text(
+                        "Kategorie auswählen",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Icon(Icons.Filled.ExpandMore, contentDescription = "Kategorie wählen")
+            }
+
+            // Anzeige der steuerlichen Absetzbarkeit (§ 4 Abs. 5 EStG)
+            if (selectedCategory != null && state.type == TransactionType.EXPENSE) {
+                Text(
+                    text = "Steuerlich zu ${state.selectedCategoryDeductible}% absetzbar",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+        }
+
+        // Fahrtenbuch / Km-Rechner (falls Kategorie dies unterstützt)
         if (selectedCategory?.supportsMileageCalculator == true) {
             MileageCalculatorCard(
                 useCalculator = state.useMileageCalculator,
@@ -148,6 +216,7 @@ fun AddTransactionScreen(
         Button(onClick = viewModel::save, modifier = Modifier.fillMaxWidth()) {
             Text("Speichern")
         }
+
         OutlinedButton(onClick = onScanReceiptClick, modifier = Modifier.fillMaxWidth()) {
             Text("📷 Beleg scannen statt manuell eintippen")
         }
@@ -160,11 +229,13 @@ fun AddTransactionScreen(
             onCategorySelected = { categoryId ->
                 val category = filteredCategories.find { it.id == categoryId }
                 category?.let { viewModel.onCategorySelected(it) }
+                showCategoryPicker = false
             },
             onDismiss = { showCategoryPicker = false }
         )
     }
 }
+
 private fun parseHexColor(hex: String): Color = try {
     Color(hex.toColorInt())
 } catch (e: Exception) {
