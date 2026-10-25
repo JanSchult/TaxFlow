@@ -101,7 +101,8 @@ class OverviewViewModel(
                     val expenses = monthTx.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
                     MonthSummary(
                         label = "${monthNames[targetDate.monthNumber - 1]} ${targetDate.year % 100}",
-                        income = income, expenses = expenses, profit = income - expenses
+                        income = income, expenses = expenses, profit = income - expenses, fromDate = targetDate,
+                        toDate = targetDate.plus(DatePeriod(months = 1))
                     )
                 }
             }
@@ -116,7 +117,9 @@ class OverviewViewModel(
                         label = year.toString(),
                         income = income,
                         expenses = expenses,
-                        profit = income - expenses
+                        profit = income - expenses,
+                        fromDate = LocalDate(year, 1, 1),
+                        toDate = LocalDate(year, 12, 31)
                     )
                 }
             }

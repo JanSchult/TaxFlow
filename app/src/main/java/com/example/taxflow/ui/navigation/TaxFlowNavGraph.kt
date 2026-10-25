@@ -5,15 +5,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.taxflow.ui.screens.AddTransactionScreen
 import com.example.taxflow.ui.screens.BackupScreen
 import com.example.taxflow.ui.screens.DashboardScreen
@@ -22,6 +26,7 @@ import com.example.taxflow.ui.screens.EuerScreen
 import com.example.taxflow.ui.screens.ExportScreen
 import com.example.taxflow.ui.screens.OverviewScreen
 import com.example.taxflow.ui.screens.PaywallScreen
+import com.example.taxflow.ui.screens.PeriodDetailScreen
 import com.example.taxflow.ui.screens.ReceiptScanScreen
 import com.example.taxflow.ui.screens.SettingsScreen
 import com.example.taxflow.viewModel.PremiumStatusViewModel
@@ -56,7 +61,7 @@ fun TaxFlowNavGraph() {
                             }
                         },
                         icon = { Icon(item.icon, contentDescription = item.screen.label) },
-                        label = { androidx.compose.material3.Text(item.screen.label) }
+                        label = { Text(item.screen.label) }
                     )
                 }
             }
@@ -65,7 +70,7 @@ fun TaxFlowNavGraph() {
         NavHost(
             navController = navController,
             startDestination = Screen.Dashboard.route,
-            modifier = androidx.compose.ui.Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Dashboard.route) { DashboardScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
             composable(Screen.AddTransaction.route) {
@@ -75,7 +80,15 @@ fun TaxFlowNavGraph() {
 
                 )
             }
-            composable(Screen.Overview.route) { OverviewScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }, onExportClick = { navController.navigate(Screen.Export.route) }) }
+            composable(Screen.Overview.route) { OverviewScreen(
+                onNavigateToPaywall = {
+                    navController.navigate(
+                        Screen.Paywall.route
+                    )
+                },
+                onExportClick = { navController.navigate(Screen.Export.route) },
+                navController = navController
+            ) }
             composable(Screen.Deadlines.route) { DeadlinesScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
             composable(Screen.Settings.route) { SettingsScreen(onNavigateToBackup = { navController.navigate(Screen.Backup.route) }) }
             composable(Screen.ReceiptScan.route) {
@@ -99,7 +112,21 @@ fun TaxFlowNavGraph() {
             composable(Screen.Backup.route) {
                 BackupScreen()
             }
-
+            composable(
+                route = Screen.PeriodDetail.route,
+                arguments = listOf(
+                    navArgument("label") { type = NavType.StringType },
+                    navArgument("from") { type = NavType.StringType },
+                    navArgument("to") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                PeriodDetailScreen(
+                    label = backStackEntry.arguments?.getString("label") ?: "",
+                    from = backStackEntry.arguments?.getString("from") ?: "",
+                    to = backStackEntry.arguments?.getString("to") ?: "",
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

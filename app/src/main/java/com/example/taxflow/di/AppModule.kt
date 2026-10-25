@@ -62,4 +62,5 @@ val appModule = module {
     viewModel { OnboardingViewModel(get()) }
     viewModel { BackupViewModel(get(), get()) }
     viewModel { EuerViewModel(get(), get(), get()) }
+    viewModel { PeriodDetailViewModel(get()) }
 }

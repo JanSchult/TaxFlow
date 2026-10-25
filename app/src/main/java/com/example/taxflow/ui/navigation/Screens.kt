@@ -11,4 +11,8 @@ sealed class Screen(val route: String, val label: String) {
     data object Export : Screen("export", "Export")
     data object Backup : Screen("backup", "Backup")
   //  data object Euer : Screen("euer","Euer")
+    data object PeriodDetail : Screen("period_detail/{label}/{from}/{to}", "Detail") {
+        fun route(label: String, from: String, to: String) =
+            "period_detail/$label/$from/$to"
+    }
 }

@@ -65,6 +65,7 @@ dependencies {
     // Foundation wird automatisch durch die Compose BOM abgedeckt.
     // Falls explizit benötigt, nur ohne feste Version einbinden:
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.material3)
 
     // --- ROOM & STORAGE ---
     implementation(libs.androidx.room.common.jvm)

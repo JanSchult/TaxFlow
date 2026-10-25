@@ -34,9 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.taxflow.domain.usecase.OverviewMode
 import com.example.taxflow.ui.components.OverviewFilterSheet
 import com.example.taxflow.ui.components.PremiumGate
+import com.example.taxflow.ui.navigation.Screen
 import com.example.taxflow.util.formatCurrency
 import com.example.taxflow.viewModel.OverviewViewModel
 import com.example.taxflow.viewModel.PremiumStatusViewModel
@@ -47,6 +49,7 @@ import org.koin.androidx.compose.koinViewModel
 fun OverviewScreen(
     viewModel: OverviewViewModel = koinViewModel(),
     onNavigateToPaywall: () -> Unit,
+    navController: NavController,
     onExportClick: () -> Unit,
     premiumViewModel: PremiumStatusViewModel = koinViewModel()
 ) {
@@ -106,7 +109,17 @@ fun OverviewScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(state.monthSummaries) { summary ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            navController.navigate(
+                                Screen.PeriodDetail.route(
+                                    label = summary.label,
+                                    from = summary.fromDate.toString(),
+                                    to = summary.toDate.toString()
+                                )
+                            )
+                        }
+                        ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(summary.label, style = MaterialTheme.typography.titleMedium)
                             Row(
@@ -132,25 +145,6 @@ fun OverviewScreen(
             ) {
                 Text("📄 Für Steuerberater exportieren")
             }
-        }
-    }
-
-    if (showFilter) {
-        ModalBottomSheet(
-            onDismissRequest = { showFilter = false },
-            sheetState = sheetState
-        ) {
-            OverviewFilterSheet(
-                state = state,
-                onToggleCategory = viewModel::toggleCategory,
-                onSetType = viewModel::setType,
-                onSetDateRange = viewModel::setDateRange,
-                onClearFilters = {
-                    viewModel.clearFilters()
-                    showFilter = false
-                },
-                onDismiss = { showFilter = false }
-            )
         }
     }
 }
