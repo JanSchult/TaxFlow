@@ -90,9 +90,9 @@ fun TaxFlowNavGraph() {
                     onPurchaseSuccessful = { navController.popBackStack() }
                 )
             }
-            composable(Screen.Euer.route) {
-                EuerScreen()
-            }
+         //   composable(Screen.Euer.route) {
+           //     EuerScreen()
+         //   }
             composable(Screen.Export.route) {
                 ExportScreen()
             }

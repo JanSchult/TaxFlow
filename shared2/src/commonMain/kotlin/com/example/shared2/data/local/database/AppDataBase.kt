@@ -9,12 +9,13 @@ import com.example.shared2.data.local.dao.CategoryDao
 import com.example.shared2.data.local.dao.TaxDeadlineDao
 import com.example.shared2.data.local.dao.TransactionDao
 import com.example.shared2.data.local.entity.CategoryEntity
+import com.example.shared2.data.local.entity.CustomerEntity
 import com.example.shared2.data.local.entity.TaxDeadlineEntity
 import com.example.shared2.data.local.entity.TransactionEntity
 
 @Database(
-    entities = [TransactionEntity::class, CategoryEntity::class, TaxDeadlineEntity::class],
-    version = 2
+    entities = [TransactionEntity::class, CategoryEntity::class, TaxDeadlineEntity::class, CustomerEntity::class],
+    version = 3
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)

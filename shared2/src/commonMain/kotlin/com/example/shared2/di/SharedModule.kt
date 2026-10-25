@@ -4,6 +4,7 @@ import com.example.shared2.data.local.database.AppDatabase
 import com.example.shared2.data.repository.*
 import com.example.shared2.settings.PremiumStatusDataStore
 import com.example.shared2.settings.SettingsDataStore
+import com.example.shared2.usecase.BuildEuerReportUseCase
 import com.example.shared2.usecase.CalculateTaxReserveUseCase
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -27,4 +28,5 @@ val sharedModule = module {
 
     // Use Cases
     factory { CalculateTaxReserveUseCase() }
+    factory { BuildEuerReportUseCase() }
 }

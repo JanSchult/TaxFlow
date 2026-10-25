@@ -9,43 +9,83 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taxflow.domain.usecase.OverviewMode
+import com.example.taxflow.ui.components.OverviewFilterSheet
 import com.example.taxflow.ui.components.PremiumGate
 import com.example.taxflow.util.formatCurrency
 import com.example.taxflow.viewModel.OverviewViewModel
 import com.example.taxflow.viewModel.PremiumStatusViewModel
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OverviewScreen(viewModel: OverviewViewModel = koinViewModel(),
-                   onNavigateToPaywall: () -> Unit,
-                   onExportClick: () -> Unit,
-                   premiumViewModel: PremiumStatusViewModel = koinViewModel()) {
-
+fun OverviewScreen(
+    viewModel: OverviewViewModel = koinViewModel(),
+    onNavigateToPaywall: () -> Unit,
+    onExportClick: () -> Unit,
+    premiumViewModel: PremiumStatusViewModel = koinViewModel()
+) {
     val isPremium by premiumViewModel.isPremium.collectAsState()
     val state by viewModel.uiState.collectAsState()
+    var showFilter by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
     PremiumGate(
         isPremium = isPremium,
         title = "Übersicht",
         description = "Sieh auf einen Blick, wie viel du für Steuern zurücklegen solltest.",
         onUpgradeClick = onNavigateToPaywall
     ) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            Text("Übersicht", style = MaterialTheme.typography.headlineMedium)
+        // Haupt-Column, um alle Elemente im PremiumGate sauber untereinander anzuordnen
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Übersicht", style = MaterialTheme.typography.headlineMedium)
+                BadgedBox(
+                    badge = {
+                        if (state.isFilterActive) Badge()
+                    }
+                ) {
+                    IconButton(onClick = { showFilter = true }) {
+                        Icon(Icons.Filled.FilterList, contentDescription = "Filter")
+                    }
+                }
+            }
 
-            Row(modifier = Modifier.padding(vertical = 12.dp)) {
+            Row {
                 SingleChoiceSegmentedButtonRow {
                     SegmentedButton(
                         selected = state.mode == OverviewMode.MONTH,
@@ -61,6 +101,7 @@ fun OverviewScreen(viewModel: OverviewViewModel = koinViewModel(),
             }
 
             LazyColumn(
+                modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -84,9 +125,32 @@ fun OverviewScreen(viewModel: OverviewViewModel = koinViewModel(),
                     }
                 }
             }
-            OutlinedButton(onClick = onExportClick, modifier = Modifier.fillMaxWidth()) {
+
+            OutlinedButton(
+                onClick = onExportClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text("📄 Für Steuerberater exportieren")
             }
+        }
+    }
+
+    if (showFilter) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilter = false },
+            sheetState = sheetState
+        ) {
+            OverviewFilterSheet(
+                state = state,
+                onToggleCategory = viewModel::toggleCategory,
+                onSetType = viewModel::setType,
+                onSetDateRange = viewModel::setDateRange,
+                onClearFilters = {
+                    viewModel.clearFilters()
+                    showFilter = false
+                },
+                onDismiss = { showFilter = false }
+            )
         }
     }
 }
