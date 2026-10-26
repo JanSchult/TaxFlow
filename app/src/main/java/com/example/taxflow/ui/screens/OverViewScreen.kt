@@ -18,7 +18,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -36,9 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.taxflow.domain.usecase.OverviewMode
-import com.example.taxflow.ui.components.OverviewFilterSheet
 import com.example.taxflow.ui.components.PremiumGate
-import com.example.taxflow.ui.navigation.Screen
 import com.example.taxflow.util.formatCurrency
 import com.example.taxflow.viewModel.OverviewViewModel
 import com.example.taxflow.viewModel.PremiumStatusViewModel
@@ -56,7 +53,6 @@ fun OverviewScreen(
     val isPremium by premiumViewModel.isPremium.collectAsState()
     val state by viewModel.uiState.collectAsState()
     var showFilter by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
 
     PremiumGate(
         isPremium = isPremium,
@@ -112,7 +108,7 @@ fun OverviewScreen(
                     Card(modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             navController.navigate(
-                                Screen.PeriodDetail.route(
+                                Screen.PeriodDetail(
                                     label = summary.label,
                                     from = summary.fromDate.toString(),
                                     to = summary.toDate.toString()

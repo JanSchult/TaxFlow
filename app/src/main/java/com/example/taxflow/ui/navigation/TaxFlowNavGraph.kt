@@ -10,19 +10,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.example.taxflow.ui.screens.AddTransactionScreen
 import com.example.taxflow.ui.screens.BackupScreen
 import com.example.taxflow.ui.screens.DashboardScreen
 import com.example.taxflow.ui.screens.DeadlinesScreen
-import com.example.taxflow.ui.screens.EuerScreen
 import com.example.taxflow.ui.screens.ExportScreen
 import com.example.taxflow.ui.screens.OverviewScreen
 import com.example.taxflow.ui.screens.PaywallScreen
@@ -33,97 +31,109 @@ import com.example.taxflow.viewModel.PremiumStatusViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun TaxFlowNavGraph() {
+fun TaxFlowNavGraph(bottomItems: List<BottomItem> = emptyList()) {
     val navController = rememberNavController()
 
     val premiumStatusViewModel: PremiumStatusViewModel = koinViewModel()
     val isPremium by premiumStatusViewModel.isPremium.collectAsState()
 
     val goToReceiptScanOrPaywall: () -> Unit = {
-        if (isPremium) navController.navigate(Screen.ReceiptScan.route)
-        else navController.navigate(Screen.Paywall.route)
+        if (isPremium) navController.navigate(Screen.ReceiptScan)
+        else navController.navigate(Screen.Paywall)
     }
+
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                val backStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = backStackEntry?.destination
+            if (bottomItems.isNotEmpty()) {
+                NavigationBar {
+                    val backStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = backStackEntry?.destination
 
-                bottomItems.forEach { item ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(item.screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(item.icon, contentDescription = item.screen.label) },
-                        label = { Text(item.screen.label) }
-                    )
+                    bottomItems.forEach { item ->
+                        // Typsichere Überprüfung via hasRoute
+                        val selected = currentDestination?.hasRoute(item.screen::class) == true
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.screen) {
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(item.icon, contentDescription = item.label) },
+                            label = { Text(item.label) }
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Dashboard.route,
+            startDestination = Screen.Dashboard,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Dashboard.route) { DashboardScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
-            composable(Screen.AddTransaction.route) {
-                AddTransactionScreen(
-                    onSaved = { navController.navigate(Screen.Dashboard.route) },
-                    onScanReceiptClick = goToReceiptScanOrPaywall
+            composable<Screen.Dashboard> {
+                DashboardScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall) })
+            }
 
+            composable<Screen.AddTransaction> {
+                AddTransactionScreen(
+                    onSaved = { navController.navigate(Screen.Dashboard) },
+                    onScanReceiptClick = goToReceiptScanOrPaywall
                 )
             }
-            composable(Screen.Overview.route) { OverviewScreen(
-                onNavigateToPaywall = {
-                    navController.navigate(
-                        Screen.Paywall.route
-                    )
-                },
-                onExportClick = { navController.navigate(Screen.Export.route) },
-                navController = navController
-            ) }
-            composable(Screen.Deadlines.route) { DeadlinesScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall.route) }) }
-            composable(Screen.Settings.route) { SettingsScreen(onNavigateToBackup = { navController.navigate(Screen.Backup.route) }) }
-            composable(Screen.ReceiptScan.route) {
+
+            composable<Screen.Overview> {
+                OverviewScreen(
+                    onNavigateToPaywall = { navController.navigate(Screen.Paywall) },
+                    onExportClick = { navController.navigate(Screen.Export) },
+                    navController = navController
+                )
+            }
+
+            composable<Screen.Deadlines> {
+                DeadlinesScreen(onNavigateToPaywall = { navController.navigate(Screen.Paywall) })
+            }
+
+            composable<Screen.Settings> {
+                SettingsScreen(onNavigateToBackup = { navController.navigate(Screen.Backup) })
+            }
+
+            composable<Screen.ReceiptScan> {
                 ReceiptScanScreen(
-                    onDone = { navController.navigate(Screen.AddTransaction.route) { popUpTo(Screen.AddTransaction.route) { inclusive = true } } },
+                    onDone = {
+                        navController.navigate(Screen.AddTransaction) {
+                            popUpTo(Screen.AddTransaction) { inclusive = true }
+                        }
+                    },
                     onCancel = { navController.popBackStack() }
                 )
             }
-            composable(Screen.Paywall.route) {
+
+            composable<Screen.Paywall> {
                 PaywallScreen(
                     onDismiss = { navController.popBackStack() },
                     onPurchaseSuccessful = { navController.popBackStack() }
                 )
             }
-         //   composable(Screen.Euer.route) {
-           //     EuerScreen()
-         //   }
-            composable(Screen.Export.route) {
+
+            composable<Screen.Export> {
                 ExportScreen()
             }
-            composable(Screen.Backup.route) {
+
+            composable<Screen.Backup> {
                 BackupScreen()
             }
-            composable(
-                route = Screen.PeriodDetail.route,
-                arguments = listOf(
-                    navArgument("label") { type = NavType.StringType },
-                    navArgument("from") { type = NavType.StringType },
-                    navArgument("to") { type = NavType.StringType }
-                )
-            ) { backStackEntry ->
+
+            // Typsichere Navigation mit Parametern
+            composable<Screen.PeriodDetail> { backStackEntry ->
+                val detailRoute = backStackEntry.toRoute<Screen.PeriodDetail>()
                 PeriodDetailScreen(
-                    label = backStackEntry.arguments?.getString("label") ?: "",
-                    from = backStackEntry.arguments?.getString("from") ?: "",
-                    to = backStackEntry.arguments?.getString("to") ?: "",
+                    label = detailRoute.label,
+                    from = detailRoute.from,
+                    to = detailRoute.to,
                     onBack = { navController.popBackStack() }
                 )
             }

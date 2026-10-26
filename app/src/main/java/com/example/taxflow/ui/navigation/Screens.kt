@@ -1,18 +1,39 @@
-package com.example.taxflow.ui.navigation
+import kotlinx.serialization.Serializable
+sealed interface Screen {
+    @Serializable
+    data object Dashboard : Screen
 
-sealed class Screen(val route: String, val label: String) {
-    data object Dashboard : Screen("dashboard", "Übersicht")
-    data object AddTransaction : Screen("add_transaction", "Erfassen")
-    data object Overview : Screen("overview", "Monat/Jahr")
-    data object Deadlines : Screen("deadlines", "Fristen")
-    data object Settings : Screen("settings", "Einstellungen")
-    data object Paywall : Screen("paywall", "Premium")
-    data object ReceiptScan : Screen("receipt_scan", "Beleg scannen")
-    data object Export : Screen("export", "Export")
-    data object Backup : Screen("backup", "Backup")
-  //  data object Euer : Screen("euer","Euer")
-    data object PeriodDetail : Screen("period_detail/{label}/{from}/{to}", "Detail") {
-        fun route(label: String, from: String, to: String) =
-            "period_detail/$label/$from/$to"
-    }
+    @Serializable
+    data object AddTransaction : Screen
+
+    @Serializable
+    data object Overview : Screen
+
+    @Serializable
+    data object Deadlines : Screen
+
+    @Serializable
+    data object Settings : Screen
+
+    @Serializable
+    data object Paywall : Screen
+
+    @Serializable
+    data object ReceiptScan : Screen
+
+    @Serializable
+    data object Export : Screen
+
+    @Serializable
+    data object Backup : Screen
+
+    // @Serializable
+    // data object Euer : Screen
+
+    @Serializable
+    data class PeriodDetail(
+        val label: String,
+        val from: String,
+        val to: String
+    ) : Screen
 }
